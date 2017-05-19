@@ -216,7 +216,7 @@ add_shortcode( 'give_register', 'give_register_form_shortcode' );
  */
 function give_receipt_shortcode( $atts ) {
 
-	global $give_receipt_args, $payment;
+	global $give_receipt_args, $payment, $donation_receipt_information;
 
 	$give_receipt_args = shortcode_atts( array(
 		'error'          => __( 'You are missing the payment key to view this donation receipt.', 'give' ),
@@ -287,6 +287,72 @@ function give_receipt_shortcode( $atts ) {
 
 		return $login_form;
 	}
+
+    /*
+	 * Generate Donation Receipt Information.
+	 *
+	 *
+	 */
+    $donation_id = $session['post_data']['give-form-id'];
+    $donation_title = $session['post_data']['give-form-title'];
+    $donor_name = $session['post_data']['give_first'].' '.$session['post_data']['give_last'];
+    $donation_payment_mode = $session['post_data']['payment-mode'];
+
+    $is_donation_fee_enabled = $session['post_data']['give-fee-mode-enable'];
+    $donation_fee = $session['post_data']['give-fee-amount'];
+    $donation_amount = $session['post_data']['give-amount'];
+
+    $donation_total = $donation_amount;
+    if($is_donation_fee_enabled){
+        $donation_total = $donation_amount + $donation_fee;
+    }
+
+    $donation_receipt_information = array();
+    $donation_receipt_information[] = array(
+        'name' => __('Donation ID', 'give'),
+        'value' => $donation_id
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Donation', 'give'),
+        'value' => $donation_title
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Date', 'give'),
+        'value' => $session['date']
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Donor', 'give'),
+        'value' => $donor_name
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Email', 'give'),
+        'value' => $session['user_email']
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Donation Fee', 'give'),
+        'value' => give_currency_filter( give_format_amount( $donation_fee ) )
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Donation Amount', 'give'),
+        'value' => give_currency_filter( give_format_amount( $donation_amount ) )
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Total Donation', 'give'),
+        'value' => give_currency_filter( give_format_amount( $donation_total ) )
+    );
+
+    $donation_receipt_information[] = array(
+        'name' => __('Payment Key', 'give'),
+        'value' => $session['purchase_key']
+    );
+
 
 	/*
 	 * Check if the user has permission to view the receipt.

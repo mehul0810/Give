@@ -2,7 +2,7 @@
 /**
  * This template is used to display the donation summary with [give_receipt]
  */
-global $give_receipt_args, $payment;
+global $give_receipt_args, $payment, $donation_receipt_information;
 
 //Validation: Ensure $payment var is set
 if ( empty( $payment ) && isset( $give_receipt_args['id'] ) ) {
@@ -146,7 +146,14 @@ do_action( 'give_payment_receipt_before_table', $payment, $give_receipt_args );
 		do_action( 'give_payment_receipt_before', $payment, $give_receipt_args );
 		?>
 
-		<?php if ( filter_var( $give_receipt_args['donor'], FILTER_VALIDATE_BOOLEAN ) ) : ?>
+        <?php foreach( $donation_receipt_information AS $information ){ ?>
+        <tr>
+            <td scope="row"><strong><?php echo $information['name']; ?></strong></td>
+            <td><?php echo $information['value']; ?></td>
+        </tr>
+        <?php } ?>
+
+		<?php /* if ( filter_var( $give_receipt_args['donor'], FILTER_VALIDATE_BOOLEAN ) ) : ?>
 			<tr>
 				<td scope="row"><strong><?php esc_html_e( 'Donor:', 'give' ); ?></strong></td>
 				<td><?php echo $user['first_name'] . ' ' . $user['last_name']; ?></td>
@@ -205,11 +212,12 @@ do_action( 'give_payment_receipt_before_table', $payment, $give_receipt_args );
 				<td scope="row"><strong><?php esc_html_e( 'Payment Method:', 'give' ); ?></strong></td>
 				<td><?php echo give_get_gateway_checkout_label( give_get_payment_gateway( $payment->ID ) ); ?></td>
 			</tr>
-		<?php endif; ?>
+		<?php endif; */?>
 
 		<?php
 		//No fees built in just yet...
 		//@TODO: Fees
+
 		if ( ( $fees = give_get_payment_fees( $payment->ID, 'fee' ) ) ) : ?>
 			<tr>
 				<td scope="row"><strong><?php esc_html_e( 'Fees:', 'give' ); ?></strong></td>
@@ -239,7 +247,7 @@ do_action( 'give_payment_receipt_before_table', $payment, $give_receipt_args );
 		 * @param object $payment           The payment object.
 		 * @param array  $give_receipt_args Receipt_argument.
 		 */
-		do_action( 'give_payment_receipt_after', $payment, $give_receipt_args );
+		//do_action( 'give_payment_receipt_after', $payment, $give_receipt_args );
 		?>
 		</tbody>
 	</table>
