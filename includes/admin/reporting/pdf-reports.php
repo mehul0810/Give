@@ -168,7 +168,15 @@ function give_generate_pdf( $data ) {
 			$pdf->Row( $prepare_pdf_data );
 		endforeach;
 	} else {
-		$pdf->SetWidths( array( 280 ) );
+
+        if( $categories_enabled && $tags_enabled ) {
+            $pdf->SetWidths( array( 280 ) );
+        } elseif( $categories_enabled || $tags_enabled ) {
+            $pdf->SetWidths( array( 235 ) );
+        } else {
+            $pdf->SetWidths( array( 190 ) );
+        }
+
 		$title = utf8_decode( esc_html__( 'No forms found.', 'give' ) );
 		$pdf->Row( array( $title ) );
 	}
