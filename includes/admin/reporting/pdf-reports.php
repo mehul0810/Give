@@ -169,6 +169,7 @@ function give_generate_pdf( $data ) {
 		endforeach;
 	} else {
 
+        // Fix: Minor Styling Alignment Issue for PDF
         if( $categories_enabled && $tags_enabled ) {
             $pdf->SetWidths( array( 280 ) );
         } elseif( $categories_enabled || $tags_enabled ) {
