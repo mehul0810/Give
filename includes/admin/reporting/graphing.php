@@ -191,7 +191,7 @@ function give_reports_graph() {
 				<div class="inside">
 					<?php give_reports_graph_controls(); ?>
 					<?php
-					$graph = new Give_Graph( $data );
+					$graph = new Give_Graph( $data, array( 'dataType' => array( 'amount', 'count' ) ) );
 					$graph->set( 'x_mode', 'time' );
 					$graph->set( 'multiple_y_axes', true );
 					$graph->display();
@@ -441,7 +441,7 @@ function give_reports_graph_of_form( $form_id = 0 ) {
 				<div class="inside">
 					<?php give_reports_graph_controls(); ?>
 					<?php
-					$graph = new Give_Graph( $data );
+					$graph = new Give_Graph( $data, array( 'dataType' => array( 'amount', 'count' ) ) );
 					$graph->set( 'x_mode', 'time' );
 					$graph->set( 'multiple_y_axes', true );
 					$graph->display();
@@ -813,14 +813,15 @@ function give_reports_refresh_button() {
 		'give-message' => 'refreshed-reports'
 	) ), 'give-refresh-reports' );
 
-	echo '<a href="'
-	     . esc_url_raw( $url )
-	     . '" data-tooltip="'. esc_attr__( 'Clicking this will clear the reports cache.', 'give' )
-	     . '" data-tooltip-my-position="right center"  data-tooltip-target-position="left center" class="button alignright give-admin-button give-tooltip">'
-	     . '<span class="give-admin-button-icon give-admin-button-icon-update"></span>'
-	     . esc_html__( 'Refresh Report Data', 'give' )
-	     . '</a>';
-
+	echo Give()->tooltips->render_link(array(
+		'label' => esc_attr__( 'Clicking this will clear the reports cache.', 'give' ),
+		'tag_content' => '<span class="give-admin-button-icon give-admin-button-icon-update"></span>' . esc_html__( 'Refresh Report Data', 'give' ),
+		'link' => $url,
+		'position' => 'left',
+		'attributes' => array(
+				'class' => 'button alignright give-admin-button'
+		)
+	));
 }
 
 add_action( 'give_reports_graph_additional_stats', 'give_reports_refresh_button' );

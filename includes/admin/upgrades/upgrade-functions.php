@@ -50,9 +50,18 @@ function give_do_automatic_upgrades() {
 			give_v187_upgrades();
 			$did_upgrade = true;
 
-        case version_compare( $give_version, '1.8.8', '<' ) :
+		case version_compare( $give_version, '1.8.8', '<' ) :
 			give_v188_upgrades();
 			$did_upgrade = true;
+
+		case version_compare( $give_version, '1.8.9', '<' ) :
+			give_v189_upgrades();
+			$did_upgrade = true;
+
+		case version_compare( $give_version, '2.0', '<' ) :
+			give_v20_upgrades();
+			$did_upgrade = true;
+
 
 	}
 
@@ -85,72 +94,102 @@ function give_show_upgrade_notices() {
 
 	$give_version = preg_replace( '/[^0-9.].*/', '', $give_version );
 
-	/*
+	/**
 	 *  NOTICE:
 	 *
 	 *  When adding new upgrade notices, please be sure to put the action into the upgrades array during install:
-	 *  /includes/install.php @ Appox Line 156
-	 *
+	 *  /includes/install.php @ Approx Line 156
 	 */
 
-	// v1.3.2 Upgrades
-	if ( version_compare( $give_version, '1.3.2', '<' ) || ! give_has_upgrade_completed( 'upgrade_give_payment_customer_id' ) ) {
-		printf(
-			/* translators: %s: upgrade URL */
-			'<div class="updated"><p>' . __( 'Give needs to upgrade the donor database, click <a href="%s">here</a> to start the upgrade.', 'give' ) . '</p></div>',
-			esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=upgrade_give_payment_customer_id' ) )
-		);
-	}
-
-	// v1.3.4 Upgrades //ensure the user has gone through 1.3.4.
-	if ( version_compare( $give_version, '1.3.4', '<' ) || ( ! give_has_upgrade_completed( 'upgrade_give_offline_status' ) && give_has_upgrade_completed( 'upgrade_give_payment_customer_id' ) ) ) {
-		printf(
-			/* translators: %s: upgrade URL */
-			'<div class="updated"><p>' . __( 'Give needs to upgrade the donations database, click <a href="%s">here</a> to start the upgrade.', 'give' ) . '</p></div>',
-			esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=upgrade_give_offline_status' ) )
-		);
-	}
-
+	// Resume updates.
 	// Check if we have a stalled upgrade.
 	$resume_upgrade = give_maybe_resume_upgrade();
 	if ( ! empty( $resume_upgrade ) ) {
-		$resume_url = add_query_arg( $resume_upgrade, admin_url( 'index.php' ) );
-		echo Give_Notices::notice_html(
-			sprintf(
+		$resume_url = add_query_arg( give_maybe_resume_upgrade(), admin_url( 'index.php' ) );
+
+		Give()->notices->register_notice( array(
+			'id'          => 'give-resume-updates',
+			'type'        => 'warning',
+			'description' => sprintf(
 				__( 'Give needs to complete a database upgrade that was previously started, click <a href="%s">here</a> to resume the upgrade.', 'give' ),
 				esc_url( $resume_url )
-			)
-		);
+			),
+		) );
 
 		return;
 	}
 
+	// v1.3.2 Upgrades
+	Give()->notices->register_notice( array(
+		'id'          => 'give-version-1-3-2-updates',
+		'type'        => 'warning',
+		'description' => sprintf(
+			'<p>' . __( 'Give 1.3.2 needs to upgrade the donor database, click <a href="%s">here</a> to start the upgrade.', 'give' ) . '</p>',
+			esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=upgrade_give_payment_customer_id' ) )
+		),
+		'show'        => ( version_compare( $give_version, '1.3.2', '<' ) || ! give_has_upgrade_completed( 'upgrade_give_payment_customer_id' ) ),
+	) );
+
+	// v1.3.4 Upgrades //ensure the user has gone through 1.3.4.
+	Give()->notices->register_notice( array(
+		'id'          => 'give-version-1-3-4-updates',
+		'type'        => 'warning',
+		'description' => sprintf(
+			'<p>' . __( 'Give 1.3.4 needs to upgrade the donations database, click <a href="%s">here</a> to start the upgrade.', 'give' ) . '</p>',
+			esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=upgrade_give_offline_status' ) )
+		),
+		'show'        => ( version_compare( $give_version, '1.3.4', '<' ) || ( ! give_has_upgrade_completed( 'upgrade_give_offline_status' ) && give_has_upgrade_completed( 'upgrade_give_payment_customer_id' ) ) ),
+	) );
+
 	// v1.8 form metadata upgrades.
-	if ( version_compare( $give_version, '1.8', '<' ) || ! give_has_upgrade_completed( 'v18_upgrades_form_metadata' ) ) {
-		echo Give_Notices::notice_html(
-			sprintf(
-				esc_html__( 'Give needs to upgrade the form database, click %1$shere%2$s to start the upgrade.', 'give' ),
-				'<a class="give-upgrade-link" href="' . esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=give_v18_upgrades_form_metadata' ) ) . '">',
-				'</a>'
-			)
-		);
-	}
+	Give()->notices->register_notice( array(
+		'id'          => 'give-version-1-8-updates',
+		'type'        => 'warning',
+		'description' => sprintf(
+			__( 'Give 1.8 needs to upgrade the form database, click <a class="give-upgrade-link" href="%s">here</a> to start the upgrade.', 'give' ),
+			esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=give_v18_upgrades_form_metadata' ) )
+		),
+		'show'        => ( version_compare( $give_version, '1.8', '<' ) || ! give_has_upgrade_completed( 'v18_upgrades_form_metadata' ) )
+	) );
+
+	// v1.8.9 Upgrades
+	Give()->notices->register_notice( array(
+		'id'          => 'give-version-1-8-9-updates',
+		'type'        => 'warning',
+		'description' => sprintf(
+			__( 'Give 1.8.9 needs to upgrade the donation forms meta-fields in database, click <a href="%s">here</a> to start the upgrade.', 'give' ),
+			esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=v189_upgrades_levels_post_meta' ) )
+		),
+		'show'        => ( version_compare( $give_version, '1.8.9', '<' ) || ( ! give_has_upgrade_completed( 'v189_upgrades_levels_post_meta' ) ) ),
+	) );
+
+	// v2.0 form metadata upgrades.
+	Give()->notices->register_notice( array(
+		'id'          => 'give-version-2-0-0-updates',
+		'type'        => 'warning',
+		'description' => sprintf(
+			__( 'Give 2.0 needs to upgrade the form database, click %1$shere%2$s to start the upgrade.', 'give' ),
+			'<a class="give-upgrade-link" href="' . esc_url( admin_url( 'index.php?page=give-upgrades&give-upgrade=give_v20_upgrades_form_metadata' ) ) . '">',
+			'</a>'
+		),
+		'show'        => ( version_compare( $give_version, '2.0', '<' ) || ( ! give_has_upgrade_completed( 'v20_upgrades_form_metadata' ) ) ),
+	) );
 
 	// End 'Stepped' upgrade process notices.
 	?>
 	<script>
-		jQuery(document).ready(function($){
+		jQuery(document).ready(function ($) {
 			var $upgrade_links = $('.give-upgrade-link');
-			if( $upgrade_links.length ) {
-				$upgrade_links.on( 'click', function(e){
+			if ($upgrade_links.length) {
+				$upgrade_links.on('click', function (e) {
 					e.preventDefault();
 
-					if( ! window.confirm( '<?php _e( 'Please make sure to create a database backup before initiating the upgrade.', 'give' ); ?>' ) ) {
+					if (!window.confirm('<?php _e( 'Please make sure to create a database backup before initiating the upgrade.', 'give' ); ?>')) {
 						return;
 					}
 
 					// Redirect to upgrdae link.
-					window.location.assign( $(this).attr('href') );
+					window.location.assign($(this).attr('href'));
 				});
 			}
 		});
@@ -335,8 +374,8 @@ function give_v134_upgrade_give_offline_status() {
 	$select = "SELECT ID FROM $wpdb->posts p ";
 	$join   = "LEFT JOIN $wpdb->postmeta m ON p.ID = m.post_id ";
 	$where  = "WHERE p.post_type = 'give_payment' ";
-	$where .= "AND ( p.post_status = 'abandoned' )";
-	$where .= "AND ( m.meta_key = '_give_payment_gateway' AND m.meta_value = 'offline' )";
+	$where  .= "AND ( p.post_status = 'abandoned' )";
+	$where  .= "AND ( m.meta_key = '_give_payment_gateway' AND m.meta_value = 'offline' )";
 
 	$sql            = $select . $join . $where;
 	$found_payments = $wpdb->get_col( $sql );
@@ -459,8 +498,11 @@ add_action( 'admin_init', 'give_v152_cleanup_users' );
  * @return void
  */
 function give_v16_upgrades() {
-	@Give()->customers->create_table();
-	@Give()->customer_meta->create_table();
+	// Create the donor databases.
+	$donors_db = new Give_DB_Donors();
+	$donors_db->create_table();
+	$donor_meta = new Give_DB_Donor_Meta();
+	$donor_meta->create_table();
 }
 
 /**
@@ -721,24 +763,24 @@ function give_v18_upgrades_form_metadata() {
 			// Form content.
 			// Note in version 1.8 display content setting split into display content and content placement setting.
 			// You can delete _give_content_option in future
-			$show_content = get_post_meta( get_the_ID(), '_give_content_option', true );
-			if ( $show_content && ! get_post_meta( get_the_ID(), '_give_display_content', true ) ) {
+			$show_content = give_get_meta( get_the_ID(), '_give_content_option', true );
+			if ( $show_content && ! give_get_meta( get_the_ID(), '_give_display_content', true ) ) {
 				$field_value = ( 'none' !== $show_content ? 'enabled' : 'disabled' );
-				update_post_meta( get_the_ID(), '_give_display_content', $field_value );
+				give_update_meta( get_the_ID(), '_give_display_content', $field_value );
 
 				$field_value = ( 'none' !== $show_content ? $show_content : 'give_pre_form' );
-				update_post_meta( get_the_ID(), '_give_content_placement', $field_value );
+				give_update_meta( get_the_ID(), '_give_content_placement', $field_value );
 			}
 
 			// "Disable" Guest Donation. Checkbox
 			// See: https://github.com/WordImpress/Give/issues/1470
-			$guest_donation = get_post_meta( get_the_ID(), '_give_logged_in_only', true );
+			$guest_donation        = give_get_meta( get_the_ID(), '_give_logged_in_only', true );
 			$guest_donation_newval = ( in_array( $guest_donation, array( 'yes', 'on' ) ) ? 'disabled' : 'enabled' );
-			update_post_meta( get_the_ID(), '_give_logged_in_only', $guest_donation_newval );
+			give_update_meta( get_the_ID(), '_give_logged_in_only', $guest_donation_newval );
 
 			// Offline Donations
 			// See: https://github.com/WordImpress/Give/issues/1579
-			$offline_donation = get_post_meta( get_the_ID(), '_give_customize_offline_donations', true );
+			$offline_donation = give_get_meta( get_the_ID(), '_give_customize_offline_donations', true );
 			if ( 'no' === $offline_donation ) {
 				$offline_donation_newval = 'global';
 			} elseif ( 'yes' === $offline_donation ) {
@@ -746,7 +788,7 @@ function give_v18_upgrades_form_metadata() {
 			} else {
 				$offline_donation_newval = 'disabled';
 			}
-			update_post_meta( get_the_ID(), '_give_customize_offline_donations', $offline_donation_newval );
+			give_update_meta( get_the_ID(), '_give_customize_offline_donations', $offline_donation_newval );
 
 			// Convert yes/no setting field to enabled/disabled.
 			$form_radio_settings = array(
@@ -768,13 +810,13 @@ function give_v18_upgrades_form_metadata() {
 
 			foreach ( $form_radio_settings as $meta_key ) {
 				// Get value.
-				$field_value = get_post_meta( get_the_ID(), $meta_key, true );
+				$field_value = give_get_meta( get_the_ID(), $meta_key, true );
 
 				// Convert meta value only if it is in yes/no/none.
 				if ( in_array( $field_value, array( 'yes', 'on', 'no', 'none' ) ) ) {
 
 					$field_value = ( in_array( $field_value, array( 'yes', 'on' ) ) ? 'enabled' : 'disabled' );
-					update_post_meta( get_the_ID(), $meta_key, $field_value );
+					give_update_meta( get_the_ID(), $meta_key, $field_value );
 				}
 			}
 		}// End while().
@@ -835,7 +877,7 @@ function give_v18_renamed_core_settings() {
  * @since  1.8.7
  * @return void
  */
-function give_v187_upgrades(){
+function give_v187_upgrades() {
 	global $wpdb;
 
 	/**
@@ -848,7 +890,7 @@ function give_v187_upgrades(){
 				'_transient_give_stats_',
 				'give_cache',
 				'_transient_give_add_ons_feed',
-				'_transient__give_ajax_works'.
+				'_transient__give_ajax_works',
 				'_transient_give_total_api_keys',
 				'_transient_give_i18n_give_promo_hide',
 				'_transient_give_contributors',
@@ -858,7 +900,7 @@ function give_v187_upgrades(){
 				'_transient__give_installed',
 				'_transient__give_activation_redirect',
 				'_transient__give_hide_license_notices_shortly_',
-				'give_income_total'
+				'give_income_total',
 			)
 		),
 		1
@@ -875,7 +917,7 @@ function give_v187_upgrades(){
 		ARRAY_A
 	);
 
-	if( ! empty( $user_apikey_options ) ) {
+	if ( ! empty( $user_apikey_options ) ) {
 		foreach ( $user_apikey_options as $user ) {
 			$cached_options[] = '_transient_' . md5( 'give_api_user_' . $user['meta_key'] );
 			$cached_options[] = '_transient_' . md5( 'give_api_user_public_key' . $user['user_id'] );
@@ -909,19 +951,337 @@ function give_v188_upgrades() {
 
 	global $wp_roles;
 
-    // Get the role object.
-    $give_worker = get_role( 'give_worker' );
+	// Get the role object.
+	$give_worker = get_role( 'give_worker' );
 
 	// A list of capabilities to add for give workers.
-    $caps_to_add = array(
-        'edit_posts',
-        'edit_pages'
-    );
+	$caps_to_add = array(
+		'edit_posts',
+		'edit_pages',
+	);
 
-    foreach ( $caps_to_add as $cap ) {
-        // Add the capability.
-        $give_worker->add_cap( $cap );
-    }
+	foreach ( $caps_to_add as $cap ) {
+		// Add the capability.
+		$give_worker->add_cap( $cap );
+	}
 
 }
 
+/**
+ * Update Post meta for minimum and maximum amount for multi level donation forms
+ *
+ * This upgrade routine adds post meta for give_forms CPT for multi level donation form.
+ *
+ * @since      1.8.9
+ */
+function give_v189_upgrades_levels_post_meta_callback() {
+
+	if ( ! current_user_can( 'manage_give_settings' ) ) {
+		wp_die( esc_html__( 'You do not have permission to do Give upgrades.', 'give' ), esc_html__( 'Error', 'give' ), array(
+			'response' => 403,
+		) );
+	}
+
+	ignore_user_abort( true );
+
+	if ( ! give_is_func_disabled( 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) {
+		@set_time_limit( 0 );
+	}
+
+	$step = isset( $_GET['step'] ) ? absint( $_GET['step'] ) : 1;
+
+	// form query
+	$donation_forms = new WP_Query( array(
+			'paged'          => $step,
+			'status'         => 'any',
+			'order'          => 'ASC',
+			'post_type'      => 'give_forms',
+			'posts_per_page' => 20,
+		)
+	);
+
+	if ( $donation_forms->have_posts() ) {
+		while ( $donation_forms->have_posts() ) {
+			$donation_forms->the_post();
+			$form_id = get_the_ID();
+
+			// Remove formatting from _give_set_price
+			update_post_meta(
+				$form_id,
+				'_give_set_price',
+				give_sanitize_amount( get_post_meta( $form_id, '_give_set_price', true ) )
+			);
+
+			// Remove formatting from _give_custom_amount_minimum
+			update_post_meta(
+				$form_id,
+				'_give_custom_amount_minimum',
+				give_sanitize_amount( get_post_meta( $form_id, '_give_custom_amount_minimum', true ) )
+			);
+
+			// Bailout.
+			if ( 'set' === get_post_meta( $form_id, '_give_price_option', true ) ) {
+				continue;
+			}
+
+			$donation_levels = get_post_meta( $form_id, '_give_donation_levels', true );
+
+			if ( ! empty( $donation_levels ) ) {
+
+				foreach ( $donation_levels as $index => $donation_level ) {
+					if ( isset( $donation_level['_give_amount'] ) ) {
+						$donation_levels[ $index ]['_give_amount'] = give_sanitize_amount( $donation_level['_give_amount'] );
+					}
+				}
+
+				update_post_meta( $form_id, '_give_donation_levels', $donation_levels );
+
+				$donation_levels_amounts = wp_list_pluck( $donation_levels, '_give_amount' );
+
+				$min_amount = min( $donation_levels_amounts );
+				$max_amount = max( $donation_levels_amounts );
+
+				// Set Minimum and Maximum amount for Multi Level Donation Forms
+				give_update_meta( $form_id, '_give_levels_minimum_amount', $min_amount ? give_sanitize_amount( $min_amount ) : 0 );
+				give_update_meta( $form_id, '_give_levels_maximum_amount', $max_amount ? give_sanitize_amount( $max_amount ) : 0 );
+			}
+
+		}
+
+		/* Restore original Post Data */
+		wp_reset_postdata();
+
+		// Forms found so upgrade them
+		$step ++;
+		$redirect = add_query_arg( array(
+			'page'         => 'give-upgrades',
+			'give-upgrade' => 'v189_upgrades_levels_post_meta',
+			'step'         => $step,
+		), admin_url( 'index.php' ) );
+		wp_redirect( $redirect );
+		exit();
+	} else {
+		// The Update Ran.
+		update_option( 'give_version', preg_replace( '/[^0-9.].*/', '', GIVE_VERSION ) );
+		give_set_upgrade_complete( 'v189_upgrades_levels_post_meta' );
+		delete_option( 'give_doing_upgrade' );
+
+		wp_redirect( admin_url() );
+		exit;
+	}
+
+}
+
+add_action( 'give_v189_upgrades_levels_post_meta', 'give_v189_upgrades_levels_post_meta_callback' );
+
+
+/**
+ * Give version 1.8.9 upgrades
+ *
+ * @since      1.8.9
+ */
+function give_v189_upgrades() {
+	/**
+	 * 1. Remove user license related notice show blocked ( Give_Notice will handle )
+	 */
+	global $wpdb;
+
+	// Delete permanent notice blocker.
+	$wpdb->query(
+		$wpdb->prepare(
+			"
+					DELETE FROM $wpdb->usermeta
+					WHERE meta_key
+					LIKE '%%%s%%'
+					",
+			'_give_hide_license_notices_permanently'
+		)
+	);
+
+	// Delete short notice blocker.
+	$wpdb->query(
+		$wpdb->prepare(
+			"
+					DELETE FROM $wpdb->options
+					WHERE option_name
+					LIKE '%%%s%%'
+					",
+			'__give_hide_license_notices_shortly_'
+		)
+	);
+}
+
+/**
+ * 2.0 Upgrades.
+ *
+ * @since  2.0
+ * @return void
+ */
+function give_v20_upgrades() {
+	// Upgrade email settings.
+	give_v20_upgrades_email_setting();
+}
+
+/**
+ * Move old email api settings to new email setting api for following emails:
+ *    1. new offline donation         [This was hard coded]
+ *    2. offline donation instruction
+ *    3. new donation
+ *    4. donation receipt
+ *
+ * @since 2.0
+ */
+function give_v20_upgrades_email_setting() {
+	$all_setting = give_get_settings();
+
+	// Bailout on fresh install.
+	if ( empty( $all_setting ) ) {
+		return;
+	}
+
+	$settings = array(
+		'offline_donation_subject'      => 'offline-donation-instruction_email_subject',
+		'global_offline_donation_email' => 'offline-donation-instruction_email_message',
+		'donation_subject'              => 'donation-receipt_email_subject',
+		'donation_receipt'              => 'donation-receipt_email_message',
+		'donation_notification_subject' => 'new-donation_email_subject',
+		'donation_notification'         => 'new-donation_email_message',
+		'admin_notice_emails'           => array(
+			'new-donation_recipient',
+			'new-offline-donation_recipient',
+			'new-donor-register_recipient',
+		),
+		'admin_notices'                 => 'new-donation_notification',
+	);
+
+	foreach ( $settings as $old_setting => $new_setting ) {
+		// Do not update already modified
+		if ( ! is_array( $new_setting ) ) {
+			if ( array_key_exists( $new_setting, $all_setting ) || ! array_key_exists( $old_setting, $all_setting ) ) {
+				continue;
+			}
+		}
+
+		switch ( $old_setting ) {
+			case 'admin_notices':
+				$notification_status = give_get_option( $old_setting, 'disabled' );
+
+				give_update_option( $new_setting, $notification_status );
+				give_delete_option( $old_setting );
+				break;
+
+			// @todo: Delete this option later ( version > 2.0 ) because we need this for backward compatibility give_get_admin_notice_emails.
+			case 'admin_notice_emails':
+				$recipients = give_get_admin_notice_emails();
+
+				foreach ( $new_setting as $setting ) {
+					// bailout if setting already exist.
+					if ( array_key_exists( $setting, $all_setting ) ) {
+						continue;
+					}
+
+					give_update_option( $setting, $recipients );
+				}
+				break;
+
+			default:
+				give_update_option( $new_setting, give_get_option( $old_setting ) );
+				give_delete_option( $old_setting );
+		}
+	}
+}
+
+
+/**
+ * Upgrade form metadata for new metabox settings.
+ *
+ * @since  2.0
+ * @return void
+ */
+function give_v20_upgrades_form_metadata() {
+	if ( ! current_user_can( 'manage_give_settings' ) ) {
+		wp_die( esc_html__( 'You do not have permission to do Give upgrades.', 'give' ), esc_html__( 'Error', 'give' ), array(
+			'response' => 403,
+		) );
+	}
+
+	ignore_user_abort( true );
+
+	if ( ! give_is_func_disabled( 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) {
+		@set_time_limit( 0 );
+	}
+
+	$step = isset( $_GET['step'] ) ? absint( $_GET['step'] ) : 1;
+
+	// form query
+	$forms = new WP_Query( array(
+			'paged'          => $step,
+			'status'         => 'any',
+			'order'          => 'ASC',
+			'post_type'      => 'give_forms',
+			'posts_per_page' => 20,
+		)
+	);
+
+	if ( $forms->have_posts() ) {
+		while ( $forms->have_posts() ) {
+			$forms->the_post();
+
+			// Update offline instruction email notification status.
+			$offline_instruction_notification_status = get_post_meta( get_the_ID(), '_give_customize_offline_donations', true );
+			$offline_instruction_notification_status = give_is_setting_enabled( $offline_instruction_notification_status, array( 'enabled', 'global' ) )
+				? $offline_instruction_notification_status
+				: 'global';
+			update_post_meta( get_the_ID(), '_give_offline-donation-instruction_notification', $offline_instruction_notification_status );
+
+			// Update offline instruction email message.
+			update_post_meta(
+				get_the_ID(),
+				'_give_offline-donation-instruction_email_message',
+				get_post_meta(
+					get_the_ID(),
+					// @todo: Delete this option later ( version > 2.0 ).
+					'_give_offline_donation_email',
+					true
+				)
+			);
+
+			// Update offline instruction email subject.
+			update_post_meta(
+				get_the_ID(),
+				'_give_offline-donation-instruction_email_subject',
+				get_post_meta(
+					get_the_ID(),
+					// @todo: Delete this option later ( version > 2.0 ).
+					'_give_offline_donation_subject',
+					true
+				)
+			);
+
+
+		}// End while().
+
+		wp_reset_postdata();
+
+		// Forms found so upgrade them
+		$step ++;
+		$redirect = add_query_arg( array(
+			'page'         => 'give-upgrades',
+			'give-upgrade' => 'give_v20_upgrades_form_metadata',
+			'step'         => $step,
+		), admin_url( 'index.php' ) );
+		wp_redirect( $redirect );
+		exit();
+
+	} else {
+		// No more forms found, finish up.
+		update_option( 'give_version', preg_replace( '/[^0-9.].*/', '', GIVE_VERSION ) );
+		delete_option( 'give_doing_upgrade' );
+		give_set_upgrade_complete( 'v20_upgrades_form_metadata' );
+
+		wp_redirect( admin_url() );
+		exit;
+	}
+}
+
+add_action( 'give_give_v20_upgrades_form_metadata', 'give_v20_upgrades_form_metadata' );
