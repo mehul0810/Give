@@ -79,7 +79,7 @@ function give_setup_post_types() {
 		'public'             => $give_forms_singular,
 		'show_ui'            => true,
 		'show_in_menu'       => true,
-		'show_in_nav_menus'  => true,
+		'show_in_nav_menus'  => $give_forms_singular,
 		'query_var'          => true,
 		'rewrite'            => $give_forms_rewrite,
 		'map_meta_cap'       => true,
