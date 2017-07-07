@@ -188,6 +188,16 @@ if ( ! class_exists( 'Give' ) ) :
 		public $notices;
 
 		/**
+		 * Give logging Object
+		 *
+		 * @since  1.8.9
+		 * @access public
+		 *
+		 * @var    Give_Logging $logs
+		 */
+		public $logs;
+
+		/**
 		 * Main Give Instance
 		 *
 		 * Ensures that only one instance of Give exists in memory at any one
@@ -258,6 +268,7 @@ if ( ! class_exists( 'Give' ) ) :
 			$this->template_loader = new Give_Template_Loader();
 			$this->email_access    = new Give_Email_Access();
 			$this->notices         = new Give_Notices();
+			$this->logs            = new Give_Logging();
 
 			/**
 			 * Fire the action after Give core loads.
