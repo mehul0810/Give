@@ -47,7 +47,7 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 		parent::__construct( array(
 			'singular' => give_get_forms_label_singular(),    // Singular name of the listed records.
 			'plural'   => give_get_forms_label_plural(),        // Plural name of the listed records.
-			'ajax'     => false                        // Does this table support ajax?.
+			'ajax'     => false,        // Does this table support ajax?.
 		) );
 	}
 
@@ -57,7 +57,7 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 	 * @access public
 	 * @since  1.0
 	 *
-	 * @param array  $item Contains all the data of the log item.
+	 * @param array  $item        Contains all the data of the log item.
 	 * @param string $column_name The name of the column.
 	 *
 	 * @return string Column Name.
@@ -88,7 +88,8 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 	 *
 	 * @return void
 	 */
-	public function column_message( $item ) { ?>
+	public function column_message( $item ) {
+		?>
 		<a href="#TB_inline?width=640&amp;inlineId=log-message-<?php echo $item['ID']; ?>" class="thickbox give-error-log-details-link button button-small" data-tooltip="<?php esc_attr_e( 'View Log Message', 'give' ); ?>"><span class="dashicons dashicons-visibility"></span></a>
 		<div id="log-message-<?php echo $item['ID']; ?>" style="display:none;">
 			<?php
@@ -129,7 +130,7 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 			'gateway'    => esc_html__( 'Gateway', 'give' ),
 			'payment_id' => esc_html__( 'Donation ID', 'give' ),
 			'date'       => esc_html__( 'Date', 'give' ),
-			'message'    => esc_html__( 'Details', 'give' )
+			'message'    => esc_html__( 'Details', 'give' ),
 		);
 
 		return $columns;
@@ -167,8 +168,6 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 	 */
 	public function get_logs() {
 
-		$give_logs = new Give_Logging();
-
 		// Prevent the queries from getting cached.
 		// Without this there are occasional memory issues for some installs.
 		wp_suspend_cache_addition( true );
@@ -176,11 +175,12 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 		$logs_data = array();
 		$paged     = $this->get_paged();
 		$log_query = array(
-			'log_type' => 'gateway_error',
-			'paged'    => $paged
+			'log_type'       => 'gateway_error',
+			'paged'          => $paged,
+			'posts_per_page' => $this->per_page,
 		);
 
-		$logs = $give_logs->get_connected_logs( $log_query );
+		$logs = Give()->logs->get_connected_logs( $log_query );
 
 		if ( $logs ) {
 			foreach ( $logs as $log ) {
@@ -188,10 +188,10 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 				$logs_data[] = array(
 					'ID'         => $log->ID,
 					'ID_label'   => '<span class=\'give-item-label give-item-label-gray\'>' . $log->ID . '</span>',
-					'payment_id' => $log->post_parent,
+					'payment_id' => $log->log_parent,
 					'error'      => 'error',
-					'gateway'    => give_get_payment_gateway( $log->post_parent ),
-					'date'       => $log->post_date
+					'gateway'    => give_get_payment_gateway( $log->log_parent ),
+					'date'       => $log->log_date,
 				);
 			}
 		}
@@ -205,9 +205,9 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 	 * Display the table navigation above or below the table even when no items in the logs,
 	 * so nav doesn't disappear.
 	 *
-	 * @see: https://github.com/WordImpress/Give/issues/564
+	 * @see    https://github.com/WordImpress/Give/issues/564
 	 *
-	 * @since 1.4.1
+	 * @since  1.4.1
 	 * @access protected
 	 *
 	 * @param string $which
@@ -247,18 +247,17 @@ class Give_Gateway_Error_Log_Table extends WP_List_Table {
 	 */
 	public function prepare_items() {
 
-		$give_logs             = new Give_logging();
 		$columns               = $this->get_columns();
 		$hidden                = array(); // No hidden columns
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 		$this->items           = $this->get_logs();
-		$total_items           = $give_logs->get_log_count( 0, 'gateway_error' );
+		$total_items           = Give()->logs->get_log_count( 0, 'gateway_error' );
 
 		$this->set_pagination_args( array(
 				'total_items' => $total_items,
 				'per_page'    => $this->per_page,
-				'total_pages' => ceil( $total_items / $this->per_page )
+				'total_pages' => ceil( $total_items / $this->per_page ),
 			)
 		);
 	}
