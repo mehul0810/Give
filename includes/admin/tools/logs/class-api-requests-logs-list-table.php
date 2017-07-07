@@ -279,11 +279,10 @@ class Give_API_Request_Log_Table extends WP_List_Table {
 	 *
 	 * @access public
 	 * @since  1.0
-	 * @global object $give_logs Give Logs Object
+	 *
 	 * @return array $logs_data Array of all the Log entires
 	 */
 	public function get_logs() {
-		global $give_logs;
 
 		$logs_data = array();
 		$paged     = $this->get_paged();
@@ -293,7 +292,7 @@ class Give_API_Request_Log_Table extends WP_List_Table {
 			'meta_query' => $this->get_meta_query(),
 		);
 
-		$logs = $give_logs->get_connected_logs( $log_query );
+		$logs = Give()->logs->get_connected_logs( $log_query );
 
 		if ( $logs ) {
 			foreach ( $logs as $log ) {
@@ -301,7 +300,7 @@ class Give_API_Request_Log_Table extends WP_List_Table {
 				$logs_data[] = array(
 					'ID'   => $log->ID,
 					'ip'   => give_get_meta( $log->ID, '_give_log_request_ip', true ),
-					'date' => $log->post_date,
+					'date' => $log->log_date,
 				);
 			}
 		}
@@ -314,23 +313,23 @@ class Give_API_Request_Log_Table extends WP_List_Table {
 	 *
 	 * @access public
 	 * @since  1.0
-	 * @global object $give_logs Give Logs Object
+	 *
 	 * @uses   Give_API_Request_Log_Table::get_columns()
 	 * @uses   WP_List_Table::get_sortable_columns()
 	 * @uses   Give_API_Request_Log_Table::get_pagenum()
 	 * @uses   Give_API_Request_Log_Table::get_logs()
 	 * @uses   Give_API_Request_Log_Table::get_log_count()
+	 *
 	 * @return void
 	 */
 	public function prepare_items() {
-		global $give_logs;
 
 		$columns               = $this->get_columns();
 		$hidden                = array(); // No hidden columns
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 		$this->items           = $this->get_logs();
-		$total_items           = $give_logs->get_log_count( 0, 'api_request' );
+		$total_items           = Give()->logs->get_log_count( 0, 'api_request' );
 
 		$this->set_pagination_args( array(
 				'total_items' => $total_items,
