@@ -668,3 +668,24 @@ function give_donor_email_exists( $email ) {
 	return false;
 }
 
+function give_check_for_donor_user_connection( $username, $user ) {
+	$donor = new Give_Donor( $user->ID, true );
+
+	// Bail out, if user is connected with donor.
+	if( 0 < $donor->user_id ) {
+		return;
+	}
+
+
+	echo "<pre>"; print_r($user); wp_die();
+	$html = '';
+	$html .= '<div id="message" class="error">';
+	$html .= '<p>';
+	$html .= __( 'Seems like your User Profile got disconnected with Donor. Please contact System Administrator.', 'give' );
+	$html .= '</p>';
+	$html .= '</div>';
+
+	echo $html;
+
+}
+add_action( 'wp_login', 'give_check_for_donor_user_connection', 10, 2 );
