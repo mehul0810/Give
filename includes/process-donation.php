@@ -647,6 +647,17 @@ function give_donation_form_validate_user_login() {
 	// Get the user by login.
 	$user_data = get_user_by( 'login', strip_tags( $_POST['give_user_login'] ) );
 
+	/**
+	 * Filters whether the given user can be authenticated with the provided $password.
+	 *
+	 * @param WP_User|WP_Error $user     WP_User or WP_Error object if a previous
+	 *                                   callback failed authentication.
+	 * @param string           $password Password to check against the user.
+	 *
+	 * @since 1.8.12
+	 */
+	$user_data = apply_filters( 'give_authenticate_user', $user_data );
+
 	// Check if user exists.
 	if ( $user_data ) {
 		// Get password.
