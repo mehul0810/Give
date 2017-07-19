@@ -668,24 +668,26 @@ function give_donor_email_exists( $email ) {
 	return false;
 }
 
-function give_check_for_donor_user_connection( $username, $user ) {
+/**
+ * Check whether Donor and User profiles are connected or not before logging in.
+ *
+ * @param $user Object of User who is trying to login.
+ *
+ * @since  1.8.12
+ *
+ * @return WP_Error
+ */
+function give_check_for_donor_user_connection( $user ) {
 	$donor = new Give_Donor( $user->ID, true );
 
 	// Bail out, if user is connected with donor.
-	if( 0 < $donor->user_id ) {
-		return;
+	if( 0 >= $donor->user_id ) {
+		return new WP_Error( 'donor_user_disconnected',
+			__( '<strong>ERROR</strong>: Donor and User profile are disconnected. Please contact administrator.', 'give' )
+		);
 	}
 
-
-	echo "<pre>"; print_r($user); wp_die();
-	$html = '';
-	$html .= '<div id="message" class="error">';
-	$html .= '<p>';
-	$html .= __( 'Seems like your User Profile got disconnected with Donor. Please contact System Administrator.', 'give' );
-	$html .= '</p>';
-	$html .= '</div>';
-
-	echo $html;
-
+	return $user;
 }
-add_action( 'wp_login', 'give_check_for_donor_user_connection', 10, 2 );
+
+add_action( 'wp_authenticate_user', 'give_check_for_donor_user_connection', 10 );
