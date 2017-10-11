@@ -944,11 +944,6 @@ final class Give_Payment {
 				'form_id'       => $this->form_id,
 				'price_id'      => $this->price_id,
 				'currency'      => $this->currency,
-				'currency_info' => array(
-					'thousands_separator' => give_get_option( 'thousands_separator', ',' ),
-					'decimal_separator'   => give_get_option( 'decimal_separator', '.' ),
-					'number_decimals'     => give_get_option( 'number_decimals', 2 ),
-				),
 				'user_info'     => $this->user_info,
 			);
 
@@ -962,6 +957,14 @@ final class Give_Payment {
 					$saved = true;
 				}
 			}
+
+			// Setup Currency Settings Information.
+			$currency_settings =  array(
+				'thousands_separator' => give_get_option( 'thousands_separator', ',' ),
+				'decimal_separator'   => give_get_option( 'decimal_separator', '.' ),
+				'number_decimals'     => give_get_option( 'number_decimals', 2 ),
+			);
+			$this->update_meta( '_give_currency_settings', $currency_settings );
 
 			$this->pending = array();
 			$saved         = true;
