@@ -461,3 +461,43 @@ function give_process_profile_editor_updates( $data ) {
 }
 
 add_action( 'give_edit_user_profile', 'give_process_profile_editor_updates' );
+
+/**
+ * The [donation_form_grid] ShortCode.
+ *
+ * @param array $atts ShortCode Attributes.
+ *
+ * @since 1.8.15
+ */
+function give_donation_form_grid( $atts ) {
+
+	$donation_form_grid = shortcode_atts( array(
+		'id'             => 'all',
+		'number'         => 3,
+		'goal'           => true,
+		'excerpt'        => true,
+		'featured_image' => true,
+		'display_style'  => 'grid'
+	), $atts, 'donation_form_grid' );
+
+	Give()->session->set( 'give_donation_form_grid', $donation_form_grid );
+
+	$args = array(
+		'post_type'      => 'give_forms',
+		'post_status'    => 'publish',
+		'posts_per_page' => 9
+	);
+
+	$give_forms = new WP_Query( $args );
+
+	if( $give_forms->have_posts() ) {
+		echo sprintf( '<div class="give-%1$s-row">', $donation_form_grid['display_style'] );
+		while ( $give_forms->have_posts() ) : $give_forms->the_post();
+			give_get_template_part( 'shortcode', 'grid' );
+		endwhile;
+		echo '</div>';
+	}
+
+
+}
+add_shortcode( 'donation_form_grid', 'give_donation_form_grid' );
