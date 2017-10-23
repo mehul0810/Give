@@ -662,56 +662,6 @@ x:-o-prefocus, .qtip .qtip-tip {
     -webkit-transform: rotate(-359deg);
     transform: rotate(-359deg); } }
 
-@font-face {
-  font-family: 'give-icomoon';
-  font-weight: normal;
-  font-style: normal; }
-
-.give-metabox-tabs li .give-icon:before {
-  font-family: 'give-icomoon';
-  src: url("../assets/fonts/icomoon.eot?kdnr3d");
-  src: url("../assets/fonts/icomoon.eot?kdnr3d#iefix") format("embedded-opentype"), url("../assets/fonts/icomoon.woff?kdnr3d") format("woff"), url("../assets/fonts/icomoon.svg?kdnr3d#icomoon") format("svg");
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
-  vertical-align: top;
-  line-height: 20px;
-  margin: 0 0 0 5px; }
-
-.give-metabox-tabs li .give-icon-default:before {
-  content: "\e903"; }
-
-.give-metabox-tabs li .give-icon-heart:before {
-  content: "\e604"; }
-
-.give-metabox-tabs li .give-icon-target:before {
-  content: "\e901"; }
-
-.give-metabox-tabs li .give-icon-display:before {
-  content: "\e90c"; }
-
-.give-metabox-tabs li .give-icon-edit:before {
-  content: "\e902"; }
-
-.give-metabox-tabs li .give-icon-checklist:before {
-  position: relative;
-  top: 1px;
-  content: "\e900"; }
-
-.give-metabox-tabs li .give-icon-purse:before {
-  content: "\e8df"; }
-
-.give-metabox-tabs li .dashicons {
-  font-size: 14px;
-  width: 14px;
-  line-height: 20px; }
-
 .give-grid-row {
   position: relative;
   width: 100%; }
@@ -763,6 +713,56 @@ x:-o-prefocus, .qtip .qtip-tip {
 @media only screen and (max-width: 33.75em) {
   .give-grid-row [class^="give-grid-col"] {
     width: 98%; } }
+
+@font-face {
+  font-family: 'give-icomoon';
+  font-weight: normal;
+  font-style: normal; }
+
+.give-metabox-tabs li .give-icon:before {
+  font-family: 'give-icomoon';
+  src: url("../assets/fonts/icomoon.eot?kdnr3d");
+  src: url("../assets/fonts/icomoon.eot?kdnr3d#iefix") format("embedded-opentype"), url("../assets/fonts/icomoon.woff?kdnr3d") format("woff"), url("../assets/fonts/icomoon.svg?kdnr3d#icomoon") format("svg");
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  vertical-align: top;
+  line-height: 20px;
+  margin: 0 0 0 5px; }
+
+.give-metabox-tabs li .give-icon-default:before {
+  content: "\e903"; }
+
+.give-metabox-tabs li .give-icon-heart:before {
+  content: "\e604"; }
+
+.give-metabox-tabs li .give-icon-target:before {
+  content: "\e901"; }
+
+.give-metabox-tabs li .give-icon-display:before {
+  content: "\e90c"; }
+
+.give-metabox-tabs li .give-icon-edit:before {
+  content: "\e902"; }
+
+.give-metabox-tabs li .give-icon-checklist:before {
+  position: relative;
+  top: 1px;
+  content: "\e900"; }
+
+.give-metabox-tabs li .give-icon-purse:before {
+  content: "\e8df"; }
+
+.give-metabox-tabs li .dashicons {
+  font-size: 14px;
+  width: 14px;
+  line-height: 20px; }
 
 /**
  * Give Forms SCSS
