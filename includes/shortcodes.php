@@ -467,7 +467,7 @@ add_action( 'give_edit_user_profile', 'give_process_profile_editor_updates' );
  *
  * @param array $atts ShortCode Attributes.
  *
- * @since 1.8.15
+ * @since 1.8.16
  */
 function give_donation_form_grid( $atts ) {
 
