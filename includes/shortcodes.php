@@ -477,7 +477,6 @@ function give_donation_form_grid( $atts ) {
 		'goal'           => true,
 		'excerpt'        => true,
 		'featured_image' => true,
-		'display_style'  => 'grid'
 	), $atts, 'donation_form_grid' );
 
 	Give()->session->set( 'give_donation_form_grid', $donation_form_grid );
@@ -491,7 +490,7 @@ function give_donation_form_grid( $atts ) {
 	$give_forms = new WP_Query( $args );
 
 	if( $give_forms->have_posts() ) {
-		echo sprintf( '<div class="give-%1$s-row">', $donation_form_grid['display_style'] );
+		echo '<div class="give-grid-row">';
 		while ( $give_forms->have_posts() ) : $give_forms->the_post();
 			give_get_template_part( 'shortcode', 'grid' );
 		endwhile;
