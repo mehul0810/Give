@@ -484,12 +484,12 @@ function give_donation_form_grid( $atts ) {
 	$args = array(
 		'post_type'      => 'give_forms',
 		'post_status'    => 'publish',
-		'posts_per_page' => 9
+		'posts_per_page' => 3
 	);
 
 	// If not All, check for select Give Donation Forms.
 	if( 'all' !== $donation_form_grid['id'] ) {
-		$args['post__in'] = array( $donation_form_grid['id'] );
+		$args['post__in'] = explode( ',', $donation_form_grid['id'] );
 	}
 
 	$give_forms = new WP_Query( $args );
