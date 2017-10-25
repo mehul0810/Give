@@ -23,5 +23,9 @@ if( 4 === $donation_form_grid['number'] ) {
 }
 ?>
 <div class="give-grid__item <?php echo $grid_class; ?>">
-<?php echo give_get_donation_form( $donation_form_grid ); ?>
+<?php
+if( $donation_form_grid['featured_image'] ) {
+	the_post_thumbnail();
+}
+echo give_get_donation_form( $donation_form_grid ); ?>
 </div>
