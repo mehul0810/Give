@@ -18,6 +18,8 @@ $color = give_get_meta( $form->ID, '_give_goal_color', true );
 $grid_class = 'give-grid-col-4';
 if( 4 === $donation_form_grid['number'] ) {
 	$grid_class = 'give-grid-col-3';
+} elseif( 2 === $donation_form_grid['number'] ) {
+	$grid_class = 'give-grid-col-6';
 }
 ?>
 <div class="give-grid__item <?php echo $grid_class; ?>">
