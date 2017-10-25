@@ -597,7 +597,7 @@ function give_display_checkout_button( $form_id, $args ) {
 		? $args['display_style']
 		: give_get_meta( $form_id, '_give_payment_display', true );
 
-	if ( 'button' === $display_option ) {
+	if ( 'button' === $display_option || 'modal' === $display_option ) {
 		$display_option = 'modal';
 	} elseif ( $display_option === 'onpage' ) {
 		return '';
@@ -1719,6 +1719,8 @@ function give_get_form_content_placement( $form_id, $args ) {
 	} elseif ( 'none' !== give_get_meta( $form_id, '_give_content_option', true ) ) {
 		// Backward compatibility for _give_content_option for v18.
 		$show_content = give_get_meta( $form_id, '_give_content_option', true );
+	} else {
+		$show_content = get_the_excerpt( $form_id ); // Show Excerpt, if Full Content Display is disabled.
 	}
 
 	return $show_content;
