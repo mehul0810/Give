@@ -492,6 +492,7 @@ function give_donation_form_grid( $atts ) {
 		'goal'           => true,
 		'excerpt'        => true,
 		'featured_image' => true,
+		'display_style'  => 'modal' // Supported Display Styles: modal and redirect.
 	), $atts, 'donation_form_grid' );
 
 	Give()->session->set( 'give_donation_form_grid', $donation_form_grid );
