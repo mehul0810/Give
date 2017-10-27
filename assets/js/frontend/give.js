@@ -98,7 +98,7 @@ jQuery( function( $ ) {
  */
 function give_open_form_modal( $form_wrap, $form ) {
 	// Hide form children.
-	var children = '#give_purchase_form_wrap, #give-payment-mode-select, .mfp-close, .give-hidden';
+	var children = '#give_purchase_form_wrap, #give-payment-mode-select, #give-donation-form-top-wrap, .mfp-close, .give-hidden';
 
 	//Alls well, open popup!
 	jQuery.magnificPopup.open( {

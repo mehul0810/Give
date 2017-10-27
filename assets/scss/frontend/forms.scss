@@ -88,6 +88,23 @@ Layout
   }
 }
 
+.give-donation-form-grid {
+  .give-display-modal {
+    .give-btn {
+      margin: 0 0 15px;
+    }
+    #give-payment-mode-select {
+      display: none;
+    }
+    #give_purchase_form_wrap {
+      @extend #give-payment-mode-select;
+    }
+    #give-donation-form-top-wrap {
+      @extend #give-payment-mode-select;
+    }
+  }
+}
+
 /*------------------------------------
 Single Forms
 --------------------------------------*/

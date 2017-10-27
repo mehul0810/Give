@@ -27,5 +27,5 @@ if( 4 === $donation_form_grid['number'] ) {
 if( $donation_form_grid['featured_image'] ) {
 	the_post_thumbnail();
 }
-echo give_get_donation_form( $donation_form_grid ); ?>
+echo give_get_donation_form_grid( $donation_form_grid ); ?>
 </div>

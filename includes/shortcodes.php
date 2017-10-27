@@ -511,7 +511,7 @@ function give_donation_form_grid( $atts ) {
 	$give_forms = new WP_Query( $args );
 
 	if( $give_forms->have_posts() ) {
-		echo '<div class="give-grid-row">';
+		echo '<div class="give-grid-row give-donation-form-grid">';
 		while ( $give_forms->have_posts() ) : $give_forms->the_post();
 			give_get_template_part( 'shortcode', 'grid' );
 		endwhile;

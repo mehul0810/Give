@@ -1070,11 +1070,17 @@ Layout
 [id*='give-form'].give-display-reveal .give-btn, [id*='give-form'].give-display-modal .give-btn {
   margin: 0 0 15px; }
 
-[id*='give-form'].give-display-reveal #give-payment-mode-select, [id*='give-form'].give-display-reveal #give_purchase_form_wrap, [id*='give-form'].give-display-modal #give-payment-mode-select, [id*='give-form'].give-display-modal #give_purchase_form_wrap {
+[id*='give-form'].give-display-reveal #give-payment-mode-select, [id*='give-form'].give-display-reveal .give-donation-form-grid .give-display-modal #give_purchase_form_wrap, .give-donation-form-grid .give-display-modal [id*='give-form'].give-display-reveal #give_purchase_form_wrap, [id*='give-form'].give-display-reveal .give-donation-form-grid .give-display-modal #give-donation-form-top-wrap, .give-donation-form-grid .give-display-modal [id*='give-form'].give-display-reveal #give-donation-form-top-wrap, [id*='give-form'].give-display-reveal #give_purchase_form_wrap, [id*='give-form'].give-display-modal #give-payment-mode-select, .give-donation-form-grid [id*='give-form'].give-display-modal #give_purchase_form_wrap, .give-donation-form-grid [id*='give-form'].give-display-modal #give-donation-form-top-wrap, [id*='give-form'].give-display-modal #give_purchase_form_wrap {
   display: none; }
 
 [id*='give-form'] .cc-address {
   margin-bottom: 15px; }
+
+.give-donation-form-grid .give-display-modal .give-btn {
+  margin: 0 0 15px; }
+
+.give-donation-form-grid .give-display-modal #give-payment-mode-select, .give-donation-form-grid .give-display-modal #give_purchase_form_wrap, .give-donation-form-grid .give-display-modal #give-donation-form-top-wrap {
+  display: none; }
 
 /*------------------------------------
 Single Forms
@@ -2380,7 +2386,7 @@ Avada
     max-width: 500px;
     margin: 40px auto;
     z-index: 2147483640; }
-    .give-modal .mfp-content [id*='give-form'] #give-payment-mode-select,
+    .give-modal .mfp-content [id*='give-form'] #give-payment-mode-select, .give-modal .mfp-content [id*='give-form'] .give-donation-form-grid .give-display-modal #give_purchase_form_wrap, .give-donation-form-grid .give-display-modal .give-modal .mfp-content [id*='give-form'] #give_purchase_form_wrap, .give-modal .mfp-content [id*='give-form'] .give-donation-form-grid .give-display-modal #give-donation-form-top-wrap, .give-donation-form-grid .give-display-modal .give-modal .mfp-content [id*='give-form'] #give-donation-form-top-wrap,
     .give-modal .mfp-content [id*='give-form'] #give_purchase_form_wrap,
     .give-modal .mfp-content [id*='give-form'].give-display-button-only .give-donation-amount,
     .give-modal .mfp-content [id*='give-form'].give-display-button-only .give-donation-levels-wrap {
