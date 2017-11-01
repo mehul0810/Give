@@ -72,7 +72,7 @@ var give_setting_edit = false;
 	 * Show alert when admin try to reload the page with saving the changes.
 	 *
 	 * @since 1.8.14
-	*/
+	 */
 	var form_edit_alert = function(){
 		if ( jQuery( 'body.post-type-give_forms' ).length > 0 ) {
 			window.addEventListener("beforeunload", function (e) {
@@ -170,13 +170,13 @@ var give_setting_edit = false;
 		// Replace options with search results
 		$( document.body ).on( 'keyup', '.give-select.chosen-container .chosen-search input, .give-select.chosen-container .search-field input', function( e ) {
 
-			var val           = $(this).val(),
-				$container    = $(this).closest('.give-select-chosen'),
-				select        = $container.prev(),
-				$search_field = $container.find('input[type="text"]'),
-				variations    = $container.hasClass('variations'),
-				lastKey       = e.which,
-				search_type   = 'give_forms_search';
+			var val = $( this ).val(),
+				$container = $( this ).closest( '.give-select-chosen' ),
+				select = $container.prev(),
+				$search_field = $container.find( 'input[type="text"]' ),
+				variations = $container.hasClass( 'variations' ),
+				lastKey = e.which,
+				search_type = 'give_forms_search';
 
 			// Detect if we have a defined search type, otherwise default to donation forms.
 			if ( $container.prev().data( 'search-type' ) ) {
@@ -228,9 +228,9 @@ var give_setting_edit = false;
 			typingTimer = setTimeout(
 				function() {
 					$.ajax({
-						type      : 'GET',
-						url       : ajaxurl,
-						data      : {
+						type: 'GET',
+						url: ajaxurl,
+						data: {
 							action: search_type,
 							s: val
 						},
@@ -919,10 +919,10 @@ var give_setting_edit = false;
 
 		process_step: function (step, data, self) {
 			/**
-			* Do not allow user to reload the page
-			*
-			* @since 1.8.14
-			*/
+			 * Do not allow user to reload the page
+			 *
+			 * @since 1.8.14
+			 */
 			give_setting_edit = true;
 
 			$.ajax({
@@ -1035,7 +1035,7 @@ var give_setting_edit = false;
 				$(this).addClass('active').fadeOut();
 				self.el.update_link.addClass('active').fadeOut();
 				$( '#give-db-updates .give-run-update-containt' ).slideUp();
-				
+
 				self.el.progress_container.find('.notice-wrap').remove();
 				self.el.progress_container.append('<div class="notice-wrap give-clearfix"><span class="spinner is-active"></span><div class="give-progress"><div></div></div></div>');
 				self.el.progress_main_container.removeClass('give-hidden');
@@ -1079,7 +1079,7 @@ var give_setting_edit = false;
 
 							self.el.update_link.closest('p').remove();
 							notice_wrap.html('<div class="notice notice-success is-dismissible"><p>' + response.data.message + '</p><button type="button" class="notice-dismiss"></button></div>');
-							
+
 						} else {
 							// Update steps info
 							if (-1 !== $.inArray('heading', Object.keys(response.data))) {
@@ -1094,28 +1094,19 @@ var give_setting_edit = false;
 							}, 5000);
 						}
 					} else {
-						if ( response && -1 !== $.inArray('percentage', Object.keys(response.data))) {
-							// Update progress.
-							$('.give-progress div', '#give-db-updates').animate({
-								width: response.data.percentage + '%',
-							}, 50, function () {
-								// Animation complete.
-							});
+						// Update progress.
+						$('.give-progress div', '#give-db-updates').animate({
+							width: response.data.percentage + '%',
+						}, 50, function () {
+							// Animation complete.
+						});
 
-							// Update steps info
-							if (-1 !== $.inArray('heading', Object.keys(response.data))) {
-								self.el.heading.html('<strong>' + response.data.heading.replace('{update_count}', self.el.heading.data('update-count')) + '</strong>');
-							}
-
-							self.process_step(parseInt(response.data.step), response.data.update, self);
-						} else{
-							notice_wrap.html('<div class="notice notice-error"><p>' + give_vars.updates.ajax_error + '</p></div>');
-
-							setTimeout(function () {
-								self.el.update_link.removeClass('active').show();
-								self.el.progress_main_container.addClass('give-hidden');
-							}, 5000);
+						// Update steps info
+						if (-1 !== $.inArray('heading', Object.keys(response.data))) {
+							self.el.heading.html('<strong>' + response.data.heading.replace('{update_count}', self.el.heading.data('update-count')) + '</strong>');
 						}
+
+						self.process_step(parseInt(response.data.step), response.data.update, self);
 					}
 
 				}
@@ -1166,48 +1157,39 @@ var give_setting_edit = false;
 	/**
 	 * Donor management screen JS
 	 */
-	var GiveDonor = {
+	var Give_Donor = {
 
-		init: function() {
-			this.editDonor();
+		init: function () {
+			this.edit_donor();
 			this.add_email();
-			this.removeUser();
-			this.cancelEdit();
+			this.remove_user();
+			this.cancel_edit();
 			this.change_country();
 			this.add_note();
 			this.delete_checked();
-
-			$( 'body' ).on( 'click', '.give-lock-block', this.unlockDonorFields );
+			$( 'body' ).on( 'click', '#give-donors-filter .bulkactions input[type="submit"]', this.handleBulkActions ) ;
 		},
-
-		unlockDonorFields: function( e ) {
-			alert( give_vars.unlock_donor_fields );
-			e.preventDefault();
-		},
-
-		editDonor: function() {
-			$( 'body' ).on( 'click', '#edit-donor', function( e ) {
+		edit_donor: function () {
+			$('body').on('click', '#edit-donor', function (e) {
 				e.preventDefault();
-				$( '#give-donor-card-wrapper .editable' ).hide();
-				$( '#give-donor-card-wrapper .edit-item' ).fadeIn().css( 'display', 'block' );
-				$( '.give-select-chosen' ).css( 'width', '100%' );
+				$('#give-donor-card-wrapper .editable').hide();
+				$('#give-donor-card-wrapper .edit-item').fadeIn().css('display', 'block');
+				$('.give-select-chosen').css('width', '100%');
 			});
 		},
-
-		removeUser: function() {
-			$( 'body' ).on( 'click', '#disconnect-donor', function( e ) {
+		remove_user: function () {
+			$('body').on('click', '#disconnect-donor', function (e) {
 				e.preventDefault();
 
-				if ( ! confirm( give_vars.disconnect_user ) ) {
+				if (!confirm(give_vars.disconnect_user)) {
 					return false;
 				}
-
-				var donorID = $( 'input[name="customerinfo[id]"]' ).val();
+				var customer_id = $('input[name="customerinfo[id]"]').val();
 
 				var postData = {
 					give_action: 'disconnect-userid',
-					customer_id: donorID,
-					_wpnonce   : $( '#edit-donor-info #_wpnonce' ).val()
+					customer_id: customer_id,
+					_wpnonce: $('#edit-donor-info #_wpnonce').val()
 				};
 
 				$.post(ajaxurl, postData, function (response) {
@@ -1216,16 +1198,14 @@ var give_setting_edit = false;
 
 			});
 		},
-
-		cancelEdit: function() {
-			$( 'body' ).on( 'click', '#give-edit-donor-cancel', function( e ) {
+		cancel_edit: function () {
+			$('body').on('click', '#give-edit-donor-cancel', function (e) {
 				e.preventDefault();
-				$( '#give-donor-card-wrapper .edit-item' ).hide();
-				$( '#give-donor-card-wrapper .editable' ).show();
-				$( '.give_user_search_results' ).html( '' );
+				$('#give-donor-card-wrapper .edit-item').hide();
+				$('#give-donor-card-wrapper .editable').show();
+				$('.give_user_search_results').html('');
 			});
 		},
-
 		change_country: function () {
 			$('select[name="customerinfo[country]"]').change(function () {
 				var $this = $(this);
@@ -1346,6 +1326,26 @@ var give_setting_edit = false;
 
 			});
 		},
+
+		handleBulkActions: function() {
+			var currentAction       = $( this ).closest( '.tablenav' ).find( 'select' ).val(),
+				$donors             = $( 'input[name="donor[]"]:checked' ).length,
+				confirmActionNotice = give_vars.donors_bulk_action[currentAction].zero;
+
+			// Check if admin selected any donors or not.
+			if ( ! parseInt( $donors ) ) {
+				alert( confirmActionNotice );
+				return false;
+			}
+
+			// Get message on basis of donors count.
+			confirmActionNotice = ( 1 < $donors ) ?
+				give_vars.donors_bulk_action[currentAction].multiple.replace( '{donor_count}', $donors ) :
+				give_vars.donors_bulk_action[currentAction].single;
+
+			return window.confirm( confirmActionNotice );
+
+		}
 	};
 
 	/**
@@ -2045,6 +2045,25 @@ var give_setting_edit = false;
 	};
 
 	/**
+	 * Initialize qTips
+	 */
+	var InitializeQtips = function() {
+		jQuery( '[data-tooltip!=""]' ).qtip({ // Grab all elements with a non-blank data-tooltip attr.
+			content: {
+				attr: 'data-tooltip' // Tell qTip2 to look inside this attr for its content.
+			},
+			style: {classes: 'qtip-rounded qtip-tipsy'},
+			events: {
+				show: function( event, api ) {
+					var $el = $( api.elements.target[0]);
+					$el.qtip( 'option', 'position.my', ( $el.data( 'tooltip-my-position' ) === undefined ) ? 'bottom center' : $el.data( 'tooltip-my-position' ) );
+					$el.qtip( 'option', 'position.at', ( $el.data( 'tooltip-target-position' ) === undefined ) ? 'top center' : $el.data( 'tooltip-target-position' ) );
+				}
+			}
+		});
+	};
+
+	/**
 	 * Payment history listing page js
 	 */
 	var GivePaymentHistory = {
@@ -2065,14 +2084,14 @@ var give_setting_edit = false;
 				'set-to-status' :
 				currentAction;
 
-			if ( Object.keys( give_vars.bulk_action ).length ) {
-				for ( status in give_vars.bulk_action ) {
+			if ( Object.keys( give_vars.donations_bulk_action ).length ) {
+				for ( status in give_vars.donations_bulk_action ) {
 					if ( status === currentAction ) {
 
 						// Get status text if current action types is status.
 						confirmActionNotice = isStatusTypeAction ?
-							give_vars.bulk_action[currentAction].zero.replace( '{status}', currentActionLabel.replace( 'Set To ', '' ) ) :
-							give_vars.bulk_action[currentAction].zero;
+							give_vars.donations_bulk_action[currentAction].zero.replace( '{status}', currentActionLabel.replace( 'Set To ', '' ) ) :
+							give_vars.donations_bulk_action[currentAction].zero;
 
 						// Check if admin selected any donations or not.
 						if ( ! parseInt( $payments ) ) {
@@ -2082,8 +2101,8 @@ var give_setting_edit = false;
 
 						// Get message on basis of payment count.
 						confirmActionNotice = ( 1 < $payments ) ?
-							give_vars.bulk_action[currentAction].multiple :
-							give_vars.bulk_action[currentAction].single;
+							give_vars.donations_bulk_action[currentAction].multiple :
+							give_vars.donations_bulk_action[currentAction].single;
 
 						// Trigger Admin Confirmation PopUp.
 						return window.confirm( confirmActionNotice
@@ -2110,66 +2129,23 @@ var give_setting_edit = false;
 		Give_Edit_Donation.init();
 		Give_Settings.init();
 		Give_Reports.init();
-		GiveDonor.init();
+		Give_Donor.init();
 		API_Screen.init();
 		Give_Export.init();
 		Give_Updates.init();
 		Edit_Form_Screen.init();
 		GivePaymentHistory.init();
 
+		InitializeQtips();
 
 		// Footer.
-		$('a.give-rating-link').click(function () {
-			jQuery(this).parent().text(jQuery(this).data('rated'));
+		$( 'a.give-rating-link' ).click( function() {
+			jQuery( this ).parent().text( jQuery( this ).data( 'rated' ) );
 		});
 
-		// Ajax user search
-		$( '.give-ajax-user-search' ).on( 'keyup', function() {
-			var user_search = $( this ).val();
-			var exclude = '';
-
-			if ( $( this ).data( 'exclude' ) ) {
-				exclude = $( this ).data( 'exclude' );
-			}
-
-			$( '.give-ajax' ).show();
-			data = {
-				action: 'give_search_users',
-				user_name: user_search,
-				exclude: exclude
-			};
-
-			document.body.style.cursor = 'wait';
-
-			$.ajax( {
-				type: 'POST',
-				data: data,
-				dataType: 'json',
-				url: ajaxurl,
-				success: function( search_response ) {
-					$( '.give-ajax' ).hide();
-					$( '.give_user_search_results' ).removeClass( 'hidden' );
-					$( '.give_user_search_results span' ).html( '' );
-					$( search_response.results ).appendTo( '.give_user_search_results span' );
-					document.body.style.cursor = 'default';
-				}
-			} );
-		} );
-
-		$( 'body' ).on( 'click.giveSelectUser', '.give_user_search_results span a', function( e ) {
-			e.preventDefault();
-			var login = $( this ).data( 'login' );
-			$( '.give-ajax-user-search' ).val( login );
-			$( '.give_user_search_results' ).addClass( 'hidden' );
-			$( '.give_user_search_results span' ).html( '' );
-		} );
-
-		$( 'body' ).on( 'click.giveCancelUserSearch', '.give_user_search_results a.give-ajax-user-cancel', function( e ) {
-			e.preventDefault();
-			$( '.give-ajax-user-search' ).val( '' );
-			$( '.give_user_search_results' ).addClass( 'hidden' );
-			$( '.give_user_search_results span' ).html( '' );
-		} );
+		/**
+		 *  Amount format validation form price field setting
+		 */
 
 		// This function uses for adding qtip to money/price field.
 		function give_add_qtip( $fields ) {
@@ -2190,34 +2166,54 @@ var give_setting_edit = false;
 			});
 		}
 
-		var $give_money_fields       = $( 'input.give-money-field, input.give-price-field' ),
-			thousand_separator       = give_vars.thousands_separator,
-			decimal_separator        = give_vars.decimal_separator,
+		var $give_money_fields = $('input.give-money-field, input.give-price-field');
+		var thousand_separator = give_vars.thousands_separator,
+			decimal_separator = give_vars.decimal_separator,
 			thousand_separator_count = '',
-			alphabet_count           = '',
-			price_string             = '',
+			alphabet_count = '',
+			price_string = '',
 
 			// Thousand separation limit in price depends upon decimal separator symbol.
 			// If thousand separator is equal to decimal separator then price does not have more then 1 thousand separator otherwise limit is zero.
 			thousand_separator_limit = ( decimal_separator === thousand_separator ? 1 : 0 );
 
+		// Add qtip to all existing money input fields.
+		give_add_qtip($give_money_fields);
+
+		// Add qtip to new created money/price input field.
+		$('#_give_donation_levels_repeat').on('click', 'button.cmb-add-group-row', function () {
+			window.setTimeout(
+				function () {
+
+					// Update input filed selector.
+					$give_money_fields = $('input.give-money-field, input.give-price-field');
+
+					// Add qtip to all existing money input fields.
+					give_add_qtip($give_money_fields);
+				},
+				100
+			);
+		});
+
 		// Check & show message on keyup event.
-		$( '#poststuff' ).on( 'keyup', 'input.give-money-field, input.give-price-field', function() {
-			var tootltip_setting = {
-				label: give_vars.price_format_guide.trim()
-			};
+		$('#poststuff').on('keyup', 'input.give-money-field, input.give-price-field', function () {
 
 			// Count thousand separator in price string.
-			thousand_separator_count = ( $( this ).val().match( new RegExp( thousand_separator, 'g' ) ) || [] ).length;
-			alphabet_count           = ( $( this ).val().match( new RegExp( '[a-z]', 'g' ) ) || [] ).length;
+			thousand_separator_count = ( $(this).val().match(new RegExp(thousand_separator, 'g')) || [] ).length;
+			alphabet_count = ( $(this).val().match(new RegExp('[a-z]', 'g')) || [] ).length;
 
 			// Show qtip conditionally if thousand separator detected on price string.
-			if (( -1 !== $(this).val().indexOf(thousand_separator) ) && ( thousand_separator_limit < thousand_separator_count ) ) {
-				$( this ).give_hintcss( 'show', tootltip_setting );
-			} else if ( alphabet_count ) {
-				$( this ).give_hintcss( 'show', tootltip_setting );
+			if (
+				( -1 !== $(this).val().indexOf(thousand_separator) )
+				&& ( thousand_separator_limit < thousand_separator_count )
+			) {
+				$(this).qtip('show');
+			} else if (alphabet_count) {
+
+				// Show qtip if user entered a number with alphabet letter.
+				$(this).qtip('show');
 			} else {
-				$( this ).give_hintcss( 'hide', tootltip_setting );
+				$(this).qtip('hide');
 			}
 
 			// Reset thousand separator count.
@@ -2272,41 +2268,10 @@ var give_setting_edit = false;
 		// Render setting tab.
 		give_render_responsive_tabs();
 
-		/**
-		 * Automatically show/hide email setting fields.
-		 */
-		$( '.give_email_api_notification_status_setting input' ).change( function() {
-			// Bailout.
-			var value = $( this ).val(),
-				is_enabled = ( 'enabled' === value ),
-				$setting_fields = {};
-
-			// Get setting fields.
-			if ( $( this ).closest( '.give_options_panel' ).length ) {
-				$setting_fields = $( this ).closest( '.give_options_panel' ).find( '.give-field-wrap:not(.give_email_api_notification_status_setting)' );
-			} else if ( $( this ).closest( 'table' ).length ) {
-				$setting_fields = $( this ).closest( 'table' ).find( 'tr:not(.give_email_api_notification_status_setting)' );
-			}
-
-			if ( - 1 === jQuery.inArray( value, [ 'enabled', 'disabled', 'global' ] ) ) {
-				return false;
-			}
-
-			// Bailout.
-			if ( ! $setting_fields.length ) {
-				return false;
-			}
-
-			// Show hide setting fields.
-			is_enabled ? $setting_fields.show() : $setting_fields.hide();
-		} );
-
-		$( '.give_email_api_notification_status_setting input:checked' ).change();
-
 		// Called after all the form processing had being done.
 		enable_form_edit_alert_setting();
-	} );
-})( jQuery );
+	});
+})(jQuery);
 
 /**
  * Responsive js.
@@ -2319,15 +2284,15 @@ jQuery(window).resize(function () {
  * Render responsive tabs
  */
 function give_render_responsive_tabs() {
-	var $setting_page_form      = jQuery('.give-settings-page'),
-		$main_tab_nav           = jQuery('h2.give-nav-tab-wrapper'),
+	var $setting_page_form = jQuery('.give-settings-page'),
+		$main_tab_nav = jQuery('.give-nav-tab-wrapper'),
 		setting_page_form_width = $setting_page_form.width(),
-		$sub_tab_nav_wrapper    = jQuery('.give-sub-nav-tab-wrapper'),
-		$sub_tab_nav            = jQuery('nav', $sub_tab_nav_wrapper),
-		$setting_tab_links      = jQuery('h2.give-nav-tab-wrapper>a:not(give-not-tab)'),
-		$show_tabs              = [],
-		$hide_tabs              = [],
-		tab_width               = 0;
+		$sub_tab_nav_wrapper = jQuery('.give-sub-nav-tab-wrapper'),
+		$sub_tab_nav = jQuery('nav', $sub_tab_nav_wrapper),
+		$setting_tab_links = jQuery('.give-nav-tab-wrapper>a:not(give-not-tab)'),
+		$show_tabs = [],
+		$hide_tabs = [],
+		tab_width = 0;
 
 	if (600 < jQuery(window).outerWidth()) {
 		tab_width = 200;
@@ -2369,7 +2334,7 @@ function give_render_responsive_tabs() {
 		// Remove current tab from sub menu and add this to main menu if exist and get last tab from main menu and add this to sub menu.
 		if ($hide_tabs.length && ( -1 != window.location.search.indexOf('&tab=') )) {
 			var $current_tab_nav = {},
-				query_params     = get_url_params();
+				query_params = get_url_params();
 
 			$hide_tabs = $hide_tabs.filter(function ($tab_link) {
 				var is_current_nav_item = ( -1 != parseInt($tab_link.attr('href').indexOf('&tab=' + query_params['tab'])) );

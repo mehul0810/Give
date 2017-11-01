@@ -94,6 +94,9 @@ function give_load_scripts() {
 		wp_register_script( 'give-blockui', $js_plugins . 'jquery.blockUI' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, $scripts_footer );
 		wp_enqueue_script( 'give-blockui' );
 
+		wp_register_script( 'give-qtip', $js_plugins . 'jquery.qtip' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, $scripts_footer );
+		wp_enqueue_script( 'give-qtip' );
+
 		wp_register_script( 'give-accounting', $js_plugins . 'accounting' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, $scripts_footer );
 		wp_enqueue_script( 'give-accounting' );
 
@@ -102,9 +105,6 @@ function give_load_scripts() {
 
 		wp_register_script( 'give-checkout-global', $js_dir . 'give-checkout-global' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, $scripts_footer );
 		wp_enqueue_script( 'give-checkout-global' );
-
-		wp_register_script( 'give-hint.css', $js_plugins . 'give-hint.css' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, false );
-		wp_enqueue_script( 'give-hint.css' );
 
 		// General scripts.
 		wp_register_script( 'give-scripts', $js_dir . 'give' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, $scripts_footer );
@@ -279,11 +279,11 @@ function give_load_admin_scripts( $hook ) {
 	wp_register_script( 'jquery-flot', $js_plugins . 'jquery.flot' . $suffix . '.js' );
 	wp_enqueue_script( 'jquery-flot' );
 
+	wp_register_script( 'give-qtip', $js_plugins . 'jquery.qtip' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, false );
+	wp_enqueue_script( 'give-qtip' );
+
 	wp_register_script( 'give-repeatable-fields', $js_plugins . 'repeatable-fields' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, false );
 	wp_enqueue_script( 'give-repeatable-fields' );
-
-	wp_register_script( 'give-hint.css', $js_plugins . 'give-hint.css' . $suffix . '.js', array( 'jquery' ), GIVE_VERSION, false );
-	wp_enqueue_script( 'give-hint.css' );
 
 	// Forms CPT Script.
 	if ( $post_type === 'give_forms' ) {
@@ -333,10 +333,16 @@ function give_load_admin_scripts( $hook ) {
 		'search_placeholder_donor'          => __( 'Type to search all donors', 'give' ),
 		'search_placeholder_country'        => __( 'Type to search all countries', 'give' ),
 		'search_placeholder_state'          => __( 'Type to search all states/provinces', 'give' ),
-		'unlock_donor_fields'            => __( 'To edit first name and last name, please go to user profile of the donor.', 'give' ),
-		'bulk_action'                       => array(
+		'donors_bulk_action'                => array(
+			'delete' => array(
+				'zero'     => __( 'You must choose at least one or more donors to delete.', 'give' ),
+				'single'   => __( 'Are you sure you want to permanently delete this donor and associated records?', 'give' ),
+				'multiple' => __( 'Are you sure you want to permanently delete the selected {donor_count} donors and associated records?', 'give' ),
+			),
+		),
+		'donations_bulk_action'             => array(
 			'delete'         => array(
-				'zero'     => __( 'You must choose at least one or more payments to delete.', 'give' ),
+				'zero'     => __( 'You must choose at least one or more donations to delete.', 'give' ),
 				'single'   => __( 'Are you sure you want to permanently delete this donation?', 'give' ),
 				'multiple' => __( 'Are you sure you want to permanently delete the selected {payment_count} donations?', 'give' ),
 			),
@@ -351,10 +357,7 @@ function give_load_admin_scripts( $hook ) {
 				'multiple' => __( 'Are you sure you want to set status of {payment_count} donations to {status}?', 'give' ),
 			),
 		),
-		'updates' => array(
-			'ajax_error' => __( 'Please reload this page and try again', 'give' )
-		),
-		'metabox_fields' => array(
+		'metabox_fields'                    => array(
 			'media' => array(
 				'button_title' => __( 'Choose Image', 'give' ),
 			),
