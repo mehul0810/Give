@@ -660,7 +660,8 @@ class Give_Notices {
 
 		$output    = '';
 		$css_id    = 'give-inline-notice';
-		$css_class = 'give-notice notice inline notice-' . $notice_args['notice_type'];
+		$css_class = 'notice-' . $notice_args['notice_type'] . ' give-notice notice inline ';
+		$css_class .= ( $notice_args['dismissible'] ) ? 'is-dismissible' : '';
 		$output    .= sprintf(
 			'<div id="%1$s" class="%2$s">%3$s</div>' . " \n",
 			$css_id,
@@ -668,6 +669,10 @@ class Give_Notices {
 			$message
 		);
 
-		return $output;
+		if( ! $notice_args['echo'] ) {
+			return $output;
+		}
+
+		echo $output;
 	}
 }
