@@ -631,4 +631,43 @@ class Give_Notices {
 
 		echo $error;
 	}
+
+	/**
+	 * Print Inline Notice.
+	 *
+	 * @param string $message     Message Text.
+	 * @param array  $notice_args An array of notice arguments.
+	 *
+	 * @todo Implement render_admin_notices function within this function in future.
+	 *
+	 * @access public
+	 * @since  1.8.17
+	 *
+	 * @return string
+	 */
+	public function print_admin_notices( $message, $notice_args = array() ) {
+		// Bailout.
+		if ( empty( $message ) ) {
+			return '';
+		}
+
+		$defaults = array(
+			'echo'        => true,
+			'notice_type' => 'warning',
+			'dismissible' => true,
+		);
+		wp_parse_args( $notice_args, $defaults );
+
+		$output    = '';
+		$css_id    = 'give-inline-notice';
+		$css_class = 'give-notice notice inline notice-' . $notice_args['notice_type'];
+		$output    .= sprintf(
+			'<div id="%1$s" class="%2$s">%3$s</div>' . " \n",
+			$css_id,
+			$css_class,
+			$message
+		);
+
+		return $output;
+	}
 }
