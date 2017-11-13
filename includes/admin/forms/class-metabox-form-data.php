@@ -126,8 +126,8 @@ class Give_MetaBox_Form_Data {
 						'type'        => 'radio_inline',
 						'default'     => 'multi',
 						'options'     => apply_filters( 'give_forms_price_options', array(
-							'set'   => __( 'Set Donation', 'give' ),
 							'multi' => __( 'Multi-level Donation', 'give' ),
+							'set'   => __( 'Set Donation', 'give' ),
 						) ),
 					),
 					array(
@@ -192,7 +192,7 @@ class Give_MetaBox_Form_Data {
 						),
 						'wrapper_class' => 'give-hidden',
 					),
-					// Donation Levels: Repeatable CMB2 Group.
+					// Donation Levels.
 					array(
 						'id'            => $prefix . 'donation_levels',
 						'type'          => 'group',
