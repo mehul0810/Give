@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string|int $fees_total
  * @property string     $post_status
  * @property string     $date
- * @property string     $postdate
+ * @property string     $post_date
  * @property string     $status
  * @property string     $email
  * @property array      $payment_meta
@@ -1094,7 +1094,7 @@ final class Give_Payment {
 	 * @since  1.5
 	 * @access public
 	 *
-	 * @param  string $note The note to add
+	 * @param  string|bool $note The note to add
 	 *
 	 * @return bool           If the note was specified or not
 	 */

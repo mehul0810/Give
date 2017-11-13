@@ -2,7 +2,8 @@
 /**
  * Session Refresh Form
  *
- * This template is used to display an email form which will when submitted send an update donation receipt and also refresh the users session
+ * This template is used to display an email form which will when submitted send an update donation receipt and also
+ * refresh the users session
  */
 
 global $give_access_form_outputted;
@@ -20,78 +21,115 @@ if ( $give_access_form_outputted ) {
 	return;
 }
 
-// Form submission.
-if ( is_email( $email ) && wp_verify_nonce( $_POST['_wpnonce'], 'give' ) ) {
+// Use reCAPTCHA.
+if ( ! give_get_errors() && $enable_recaptcha ) {
 
-	// Use reCAPTCHA
-	if ( $enable_recaptcha ) {
+	$args = array(
+		'secret'   => $recaptcha_secret,
+		'response' => $_POST['g-recaptcha-response'],
+		'remoteip' => $_POST['give_ip'],
+	);
 
-		$args = array(
-			'secret'   => $recaptcha_secret,
-			'response' => $_POST['g-recaptcha-response'],
-			'remoteip' => $_POST['give_ip'],
+	if ( ! empty( $args['response'] ) ) {
+		$request = wp_remote_post(
+			'https://www.google.com/recaptcha/api/siteverify', array(
+				'body' => $args,
+			)
+		);
+		if ( ! is_wp_error( $request ) || 200 === wp_remote_retrieve_response_code( $request ) ) {
+
+			$response = json_decode( $request['body'], true );
+
+			// reCAPTCHA fail.
+			if ( ! $response['success'] ) {
+				give_set_error(
+					'give_recaptcha_test_failed',
+
+					/**
+					 * Filter the reCAPTCHA fail message
+					 *
+					 * @since 1.0
+					 */
+					apply_filters( 'give_recaptcha_test_failed_message',
+						__( 'reCAPTCHA test failed.', 'give' )
+					)
+				);
+			}
+		} else {
+
+			// Connection issue.
+			give_set_error(
+				'give_recaptcha_connection_issue',
+
+				/**
+				 * Filter the connection issue message
+				 *
+				 * @since 1.0
+				 */
+				apply_filters( 'give_recaptcha_connection_issue_message',
+					__( 'Unable to connect to reCAPTCHA server.', 'give' )
+				)
+			);
+
+		}
+	} else {
+
+		/**
+		 * Filter the recaptcha failed message
+		 *
+		 * @since 1.0
+		 */
+		give_set_error(
+			'give_recaptcha_failed',
+			apply_filters( 'give_recaptcha_failed_message',
+				__( 'It looks like the reCAPTCHA test has failed.', 'give' )
+			)
 		);
 
-		if ( ! empty( $args['response'] ) ) {
-			$request = wp_remote_post( 'https://www.google.com/recaptcha/api/siteverify', array(
-				'body' => $args,
-			) );
-			if ( ! is_wp_error( $request ) || 200 == wp_remote_retrieve_response_code( $request ) ) {
+	}
+}
 
-				$response = json_decode( $request['body'], true );
+// If no errors or only expired token key error - then send email.
+if ( isset( $_POST['give-email-access'] ) && ! give_get_errors() ) {
 
-				// reCAPTCHA fail.
-				if ( ! $response['success'] ) {
-					give_set_error( 'give_recaptcha_test_failed', apply_filters( 'give_recaptcha_test_failed_message', __( 'reCAPTCHA test failed.', 'give' ) ) );
-				}
-			} else {
+	// Verify security nonce.
+	if ( ! wp_verify_nonce( $_POST['_wpnonce'], 'give-email-access' ) ) {
+		wp_die( __( 'Nonce verification failed.', 'give' ), __( 'Error', 'give' ) );
+	}
 
-				// Connection issue.
-				give_set_error( 'give_recaptcha_connection_issue', apply_filters( 'give_recaptcha_connection_issue_message', __( 'Unable to connect to reCAPTCHA server.', 'give' ) ) );
+	// Verify valid email.
+	if ( ! is_email( $email ) ) {
+		give_set_error( 'invalid_email', __( 'Please enter a valid email address.', 'give' ) );
+	}
 
-			}
-		} // End if().
-		else {
+	$payment_ids   = array();
+	$payment_match = false;
 
-			give_set_error( 'give_recaptcha_failed', apply_filters( 'give_recaptcha_failed_message', __( 'It looks like the reCAPTCHA test has failed.', 'give' ) ) );
+	$donor = Give()->donors->get_donor_by( 'email', $email );
 
+	if ( ! empty( $donor->payment_ids ) ) {
+		$payment_ids = explode( ',', $donor->payment_ids );
+	}
+
+	foreach ( $payment_ids as $payment_id ) {
+		$payment = new Give_Payment( $payment_id );
+
+		// Make sure Donation Access Token matches with donation details of donor whose email is provided.
+		if ( $access_token === $payment->key ) {
+			$payment_match = true;
 		}
 	}
 
-	// If no errors or only expired token key error - then send email.
-	if ( ! give_get_errors() ) {
+	if ( ! $payment_match ) {
+		give_set_error('give_email_access_token_not_match', __( 'It looks like that email address provided and access token of the link does not match.', 'give' ) );
 
-		$payment_ids   = array();
-		$payment_match = false;
+	} else {
+		// Set Verification for Access.
+		Give()->email_access->set_verify_key( $donor->id, $donor->email, $access_token );
 
-		$donor = Give()->donors->get_donor_by( 'email', $email );
-
-		if( ! empty( $donor->payment_ids ) ) {
-			$payment_ids = explode( ',', $donor->payment_ids );
-		}
-
-		foreach( $payment_ids AS $payment_id ) {
-			$payment = new Give_Payment( $payment_id );
-
-			// Make sure Donation Access Token matches with donation details of donor whose email is provided.
-			if ( $access_token === $payment->key ) {
-				$payment_match = true;
-			}
-
-		}
-
-		if ( ! $payment_match ) {
-			give_set_error( 'give_email_access_token_not_match',  __( 'It looks like that email address provided and access token of the link does not match.', 'give' ) );
-
-		} else {
-			// Set Verification for Access.
-			Give()->email_access->set_verify_key( $donor->id, $donor->email, $access_token );
-
-			wp_safe_redirect( esc_url( get_permalink( give_get_option( 'history_page' ) ) . '?give_nl=' . $access_token ) );
-		}
-
+		wp_safe_redirect( esc_url( get_permalink( give_get_option( 'history_page' ) ) . '?give_nl=' . $access_token ) );
 	}
-} // End if().
+}
 
 // Print any messages & errors.
 Give()->notices->render_frontend_notices( 0 );
@@ -103,34 +141,37 @@ if ( $show_form ) { ?>
 		<?php
 		if ( ! give_get_errors() ) {
 			Give()->notices->print_frontend_notice( apply_filters( 'give_email_access_message', __( 'Please enter the email address you used for your donation.', 'give' ) ), true );
-		} ?>
+		}
+		?>
 
 		<form method="post" action="" id="give-email-access-form">
 			<label for="give-email"><?php _e( 'Donation Email:', 'give' ); ?></label>
-			<input id="give-email" type="email" name="give_email" value="" placeholder="<?php _e( 'Email Address', 'give' ); ?>" />
-			<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce( 'give' ); ?>" />
+			<input id="give-email" type="email" name="give_email" value="" placeholder="<?php _e( 'Email Address', 'give' ); ?>"/>
 
 			<?php
 			// Enable reCAPTCHA?
-			if ( $enable_recaptcha ) { ?>
+			if ( $enable_recaptcha ) {
+				?>
 
 				<script>
 					// IP verify for reCAPTCHA.
-					(function( $ ) {
-						$( function() {
-							$.getJSON( 'https://api.ipify.org?format=jsonp&callback=?', function( json ) {
-								$( '.give_ip' ).val( json.ip );
-							} );
-						} );
-					})( jQuery );
+					(function ($) {
+						$(function () {
+							$.getJSON('https://api.ipify.org?format=jsonp&callback=?', function (json) {
+								$('.give_ip').val(json.ip);
+							});
+						});
+					})(jQuery);
 				</script>
 
 				<script src='https://www.google.com/recaptcha/api.js'></script>
 				<div class="g-recaptcha" data-sitekey="<?php echo $recaptcha_key; ?>"></div>
-				<input type="hidden" name="give_ip" class="give_ip" value="" />
+				<input type="hidden" name="give_ip" class="give_ip" value=""/>
 			<?php } ?>
 
-			<input type="submit" class="give-submit" value="<?php _e( 'Verify Email', 'give' ); ?>" />
+			<input type="submit" class="give-submit" value="<?php _e( 'Verify Email', 'give' ); ?>"/>
+			<input type="hidden" name="give-email-access" value="1" />
+ 			<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce( 'give-email-access' );?>" />
 		</form>
 	</div>
 

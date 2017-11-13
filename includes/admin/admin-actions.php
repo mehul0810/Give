@@ -148,8 +148,8 @@ function _give_register_admin_notices() {
 						'type'        => 'updated',
 						'description' => sprintf(
 							_n(
-								'Successfully deleted one transaction.',
-								'Successfully deleted %d transactions.',
+								'Successfully deleted one donation.',
+								'Successfully deleted %d donations.',
 								$payment_count,
 								'give'
 							),
@@ -171,6 +171,28 @@ function _give_register_admin_notices() {
 								'give'
 							),
 							$payment_count
+						),
+						'show'        => true,
+					) );
+					break;
+
+				case 'set-status-publish' :
+				case 'set-status-pending' :
+				case 'set-status-processing' :
+				case 'set-status-refunded' :
+				case 'set-status-revoked' :
+				case 'set-status-failed' :
+				case 'set-status-cancelled' :
+				case 'set-status-abandoned' :
+				case 'set-status-preapproval' :
+					Give()->notices->register_notice( array(
+						'id'          => 'bulk_action_status_change',
+						'type'        => 'updated',
+						'description' => _n(
+							'Donation status updated successfully.',
+							'Donation statuses updated successfully.',
+							$payment_count,
+							'give'
 						),
 						'show'        => true,
 					) );
@@ -202,7 +224,7 @@ function _give_register_admin_notices() {
 							$donor_count ),
 						'show'        => true,
 					) );
-					
+
 					break;
 			}
 		}
@@ -575,6 +597,91 @@ function give_donation_import_callback() {
 
 add_action( 'wp_ajax_give_donation_import', 'give_donation_import_callback' );
 
+/**
+ * Load core settings import ajax callback
+ * Fire when importing from JSON start
+ *
+ * @since  1.8.17
+ *
+ * @return json $json_data
+ */
+
+function give_core_settings_import_callback() {
+	$fields = isset( $_POST['fields'] ) ? $_POST['fields'] : null;
+	parse_str( $fields, $fields );
+
+	$json_data['success'] = false;
+
+	/**
+	 * Filter to Modify fields that are being pass by the ajax before importing of the core setting start.
+	 *
+	 * @access public
+	 *
+	 * @since  1.8.17
+	 *
+	 * @param array $fields
+	 *
+	 * @return array $fields
+	 */
+	$fields = (array) apply_filters( 'give_import_core_settings_fields', $fields );
+
+	$file_name = ( ! empty( $fields['file_name'] ) ? give_clean( $fields['file_name'] ) : false );
+
+	if ( ! empty( $file_name ) ) {
+		$type = ( ! empty( $fields['type'] ) ? give_clean( $fields['type'] ) : 'merge' );
+
+		// Get the json data from the file and then alter it in array format
+		$json_string   = give_get_core_settings_json( $file_name );
+		$json_to_array = json_decode( $json_string, true );
+
+		// get the current settign from the options table.
+		$host_give_options = get_option( 'give_settings', array() );
+
+		// Save old settins for backup.
+		update_option( 'give_settings_old', $host_give_options );
+
+		/**
+		 * Filter to Modify Core Settings that are being going to get import in options table as give settings.
+		 *
+		 * @access public
+		 *
+		 * @since  1.8.17
+		 *
+		 * @param array $json_to_array     Setting that are being going to get imported
+		 * @param array $type              Type of Import
+		 * @param array $host_give_options Setting old setting that used to be in the options table.
+		 * @param array $fields            Data that is being send from the ajax
+		 *
+		 * @return array $json_to_array Setting that are being going to get imported
+		 */
+		$json_to_array = (array) apply_filters( 'give_import_core_settings_data', $json_to_array, $type, $host_give_options, $fields );
+
+		update_option( 'give_settings', $json_to_array );
+
+		$json_data['success'] = true;
+	}
+
+	$json_data['percentage'] = 100;
+
+	/**
+	 * Filter to Modify core import setting page url
+	 *
+	 * @access public
+	 *
+	 * @since  1.8.17
+	 *
+	 * @return array $url
+	 */
+	$json_data['url'] = give_import_page_url( (array) apply_filters( 'give_import_core_settings_success_url', array(
+		'step'          => ( empty( $json_data['success'] ) ? '1' : '3' ),
+		'importer-type' => 'import_core_setting',
+		'success'       => ( empty( $json_data['success'] ) ? '0' : '1' ),
+	) ) );
+
+	wp_send_json( $json_data );
+}
+
+add_action( 'wp_ajax_give_core_settings_import', 'give_core_settings_import_callback' );
 
 /**
  * Initializes blank slate content if a list table is empty.
@@ -605,10 +712,10 @@ function give_validate_user_profile( $errors, $update, $user ) {
 		return;
 	}
 
-	if( ! empty( $user->ID ) ) {
+	if ( ! empty( $user->ID ) ) {
 		$donor = Give()->donors->get_donor_by( 'user_id', $user->ID );
 
-		if( $donor ) {
+		if ( $donor ) {
 			// If Donor is attached with User, then validate first name.
 			if ( empty( $_POST['first_name'] ) ) {
 				$errors->add(
@@ -638,7 +745,7 @@ function give_donor_information_profile_fields( $user ) {
 	$donor = Give()->donors->get_donor_by( 'user_id', $user->ID );
 
 	// Display Donor Information, only if donor is attached with User.
-	if( ! empty( $donor->user_id ) ) {
+	if ( ! empty( $donor->user_id ) ) {
 		?>
 		<table class="form-table">
 			<tbody>
@@ -674,3 +781,208 @@ function give_get_user_roles() {
 
 	return $user_roles;
 }
+
+/**
+ * Flush rewrite rule
+ *
+ * @since 1.8.17
+ */
+function give_flush_rewrite_rules() {
+	if ( get_option( 'give_flush_rewrite_rules', 0 ) ) {
+		flush_rewrite_rules();
+		update_option( 'give_flush_rewrite_rules', 0, 'no' );
+	}
+}
+
+add_action( 'init', 'give_flush_rewrite_rules' );
+
+
+/**
+ * Ajax handle for donor address.
+ *
+ * @since 2.0
+ *
+ * @return string
+ */
+function __give_ajax_donor_manage_addresses() {
+	// Bailout.
+	if (
+		empty( $_POST['form'] ) ||
+		empty( $_POST['donorID'] )
+	) {
+		wp_send_json_error( array( 'error' => 1 ) );
+	}
+
+	$post                  = give_clean( wp_parse_args( $_POST ) );
+	$donorID               = absint( $post['donorID'] );
+	$form_data             = give_clean( wp_parse_args( $post['form'] ) );
+	$is_multi_address_type = ( 'billing' === $form_data['address-id'] || false !== strpos( $form_data['address-id'], '_' ) );
+	$address_type          = false !== strpos( $form_data['address-id'], '_' ) ?
+		array_shift( explode( '_', $form_data['address-id'] ) ) :
+		$form_data['address-id'];
+	$address_id            = false !== strpos( $form_data['address-id'], '_' ) ?
+		array_pop( explode( '_', $form_data['address-id'] ) ) :
+		null;
+	$response_data         = array(
+		'action' => $form_data['address-action'],
+		'id'     => $form_data['address-id'],
+	);
+
+	// Security check.
+	if ( ! wp_verify_nonce( $form_data['_wpnonce'], 'give-manage-donor-addresses' ) ) {
+		wp_send_json_error( array(
+				'error'     => 1,
+				'error_msg' => wp_sprintf(
+					'<div class="notice notice-error"><p>%s</p></div>',
+					__( 'Error: Security issue.', 'give' )
+				)
+			)
+		);
+	}
+
+	$donor = new Give_Donor( $donorID );
+
+	// Verify donor.
+	if ( ! $donor->id ) {
+		wp_send_json_error( array( 'error' => 3 ) );
+	}
+
+	// Unset all data except address.
+	unset(
+		$form_data['_wpnonce'],
+		$form_data['address-action'],
+		$form_data['address-id']
+	);
+
+	// Process action.
+	switch ( $response_data['action'] ) {
+
+		case 'add':
+			if ( ! $donor->add_address( "{$address_type}[]", $form_data ) ) {
+				wp_send_json_error( array(
+						'error'     => 1,
+						'error_msg' => wp_sprintf(
+							'<div class="notice notice-error"><p>%s</p></div>',
+							__( 'Error: Unable to save the address. Please check if address already exist.', 'give' )
+						)
+					)
+				);
+			}
+
+			$total_addresses = count( $donor->address[ $address_type ] );
+
+			$address_index = $is_multi_address_type ?
+				$total_addresses - 1 :
+				$address_type;
+
+			$address_id = $is_multi_address_type ?
+				end( array_keys( $donor->address[ $address_type ] ) ) :
+				$address_type;
+
+			$response_data['address_html'] = __give_get_format_address(
+				end( $donor->address['billing'] ),
+				array(
+					// We can add only billing address from donor screen.
+					'type'  => 'billing',
+					'id'    => $address_id,
+					'index' => ++ $address_index,
+				)
+			);
+			$response_data['success_msg']  = wp_sprintf(
+				'<div class="notice updated"><p>%s</p></div>',
+				__( 'Successfully added a new address to the donor.', 'give' )
+			);
+
+			if ( $is_multi_address_type ) {
+				$response_data['id'] = "{$response_data['id']}_{$address_index}";
+			}
+
+			break;
+
+		case 'remove':
+			if ( ! $donor->remove_address( $response_data['id'] ) ) {
+				wp_send_json_error( array(
+						'error'     => 2,
+						'error_msg' => wp_sprintf(
+							'<div class="notice notice-error"><p>%s</p></div>',
+							__( 'Error: Unable to delete address.', 'give' )
+						)
+					)
+				);
+			}
+
+			$response_data['success_msg'] = wp_sprintf(
+				'<div class="notice updated"><p>%s</p></div>',
+				__( 'Successfully removed a address of donor.', 'give' )
+			);
+
+			break;
+
+		case 'update':
+			if ( ! $donor->update_address( $response_data['id'], $form_data ) ) {
+				wp_send_json_error( array(
+						'error'     => 3,
+						'error_msg' => wp_sprintf(
+							'<div class="notice notice-error"><p>%s</p></div>',
+							__( 'Error: Unable to update address. Please check if address already exist.', 'give' )
+						)
+					)
+				);
+			}
+
+			$response_data['address_html'] = __give_get_format_address(
+				$is_multi_address_type ?
+					$donor->address[ $address_type ][ $address_id ] :
+					$donor->address[ $address_type ],
+				array(
+					'type'  => $address_type,
+					'id'    => $address_id,
+					'index' => $address_id,
+				)
+			);
+			$response_data['success_msg']  = wp_sprintf(
+				'<div class="notice updated"><p>%s</p></div>',
+				__( 'Successfully updated a address of donor', 'give' )
+			);
+
+			break;
+	}
+
+	wp_send_json_success( $response_data );
+}
+
+add_action( 'wp_ajax_donor_manage_addresses', '__give_ajax_donor_manage_addresses' );
+
+/**
+ * Admin donor billing address label
+ *
+ * @since 2.0
+ *
+ * @param string $address_label
+ *
+ * @return string
+ */
+function __give_donor_billing_address_label( $address_label ) {
+	$address_label = __( 'Billing Address', 'give' );
+
+	return $address_label;
+}
+
+add_action( 'give_donor_billing_address_label', '__give_donor_billing_address_label' );
+
+/**
+ * Admin donor personal address label
+ *
+ * @since 2.0
+ *
+ * @param string $address_label
+ *
+ * @return string
+ */
+function __give_donor_personal_address_label( $address_label ) {
+	$address_label = __( 'Personal Address', 'give' );
+
+	return $address_label;
+}
+
+add_action( 'give_donor_personal_address_label', '__give_donor_personal_address_label' );
