@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class Give_Updates
  *
@@ -257,9 +258,9 @@ class Give_Updates {
 		$this->__register_plugin_addon_updates();
 
 		// Bailout.
-		if ( ! $this->get_update_count()) {
+		if ( ! $this->get_update_count() ) {
 			// Show complete update message if still on update setting page.
-			if ( isset($_GET['page']) && 'give-updates' === $_GET['page'] ) {
+			if ( isset( $_GET['page'] ) && 'give-updates' === $_GET['page'] ) {
 				// Upgrades
 				add_submenu_page(
 					'edit.php?post_type=give_forms',
@@ -378,7 +379,7 @@ class Give_Updates {
 				'error'
 			);
 		}
-
+		
 		// Set params.
 		$this->step   = absint( $_POST['step'] );
 		$this->update = absint( $_POST['update'] );
@@ -387,7 +388,7 @@ class Give_Updates {
 		if ( ! $this->step ) {
 			$this->send_ajax_response(
 				array(
-					'message'    => __( 'Please reload this page  and try again', 'give' ),
+					'message'    => __( 'Please reload this page and try again', 'give' ),
 					'heading'    => '',
 					'percentage' => 0,
 				),
@@ -410,10 +411,22 @@ class Give_Updates {
 			);
 		}
 
+
 		// Process update.
 		foreach ( $updates as $index => $update ) {
 			// Check if update depend upon any other update.
-			if ( ! empty( $update['depend'] ) && ! give_has_upgrade_completed( $update['depend'] ) ) {
+			if ( ! $this->is_parent_updates_completed( $update ) ) {
+				if ( 1 === count( $updates ) ) {
+					$this->send_ajax_response(
+						array(
+							'message'    => __( 'Error occurred while running current update because it contains invalid update dependencies', 'give' ),
+							'heading'    => '',
+							'percentage' => 0,
+						),
+						'error'
+					);
+				}
+
 				continue;
 			}
 
@@ -526,6 +539,39 @@ class Give_Updates {
 
 		// Verify percentage.
 		$this->percentage = ( 100 < $this->percentage ) ? 100 : $this->percentage;
+	}
+
+	/**
+	 * Check if parent update completed or not.
+	 *
+	 * @since  2.0
+	 * @access private
+	 *
+	 * @param array $update
+	 *
+	 * @return bool
+	 */
+	private function is_parent_updates_completed( $update ) {
+		// Bailout.
+		if ( empty( $update['depend'] ) ) {
+			return true;
+		}
+
+		$is_dependency_completed = true;
+
+		// Change param to array.
+		if ( is_string( $update['depend'] ) ) {
+			$update['depend'] = array( $update['depend'] );
+		}
+
+		foreach ( $update['depend'] as $depend ) {
+			if ( ! give_has_upgrade_completed( $depend ) ) {
+				$is_dependency_completed = false;
+				break;
+			}
+		}
+
+		return $is_dependency_completed;
 	}
 }
 

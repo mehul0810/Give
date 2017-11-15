@@ -63,6 +63,7 @@ class Give_Tools_Delete_Test_Transactions extends Give_Batch_Export {
 
 		$offset     = ( $this->step - 1 ) * $this->per_step;
 		$step_items = array_slice( $items, $offset, $this->per_step );
+		$meta_table = __give_v20_bc_table_details( 'payment' );
 
 		if ( $step_items ) {
 
@@ -105,7 +106,7 @@ class Give_Tools_Delete_Test_Transactions extends Give_Batch_Export {
 						$ids = implode( ',', $ids );
 
 						$sql[] = "DELETE FROM $wpdb->posts WHERE id IN ($ids)";
-						$sql[] = "DELETE FROM $wpdb->postmeta WHERE post_id IN ($ids)";
+						$sql[] = "DELETE FROM {$meta_table['name']} WHERE {$meta_table['column']['id']} IN ($ids)";
 						$sql[] = "DELETE FROM $wpdb->comments WHERE comment_post_ID IN ($ids)";
 						$sql[] = "DELETE FROM $wpdb->commentmeta WHERE comment_id NOT IN (SELECT comment_ID FROM $wpdb->comments)";
 						break;

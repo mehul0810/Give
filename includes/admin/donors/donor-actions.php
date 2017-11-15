@@ -114,11 +114,11 @@ function give_edit_donor( $args ) {
 	$donor_data['name']    = strip_tags( stripslashes( $donor_info['name'] ) );
 	$donor_data['user_id'] = $donor_info['user_id'];
 
-	$donor_data = apply_filters( 'give_edit_donor_info', $donor_data, $donor_id );
-	$address    = apply_filters( 'give_edit_donor_address', $address, $donor_id );
+	$donor_data             = apply_filters( 'give_edit_donor_info', $donor_data, $donor_id );
+	$address                = apply_filters( 'give_edit_donor_address', $address, $donor_id );
 
-	$donor_data = array_map( 'sanitize_text_field', $donor_data );
-	$address    = array_map( 'sanitize_text_field', $address );
+	$donor_data             = give_clean( $donor_data );
+	$address                = give_clean( $address );
 
 	$output = give_connect_user_donor_profile( $donor, $donor_data, $address );
 
@@ -161,7 +161,7 @@ function give_donor_save_note( $args ) {
 		return false;
 	}
 
-	$donor_note = trim( sanitize_text_field( $args['donor_note'] ) );
+	$donor_note = trim( give_clean( $args['donor_note'] ) );
 	$donor_id   = (int) $args['customer_id'];
 	$nonce      = $args['add_donor_note_nonce'];
 
@@ -298,7 +298,7 @@ function give_donor_delete( $args ) {
 
 				// Just set the donations to customer_id of 0.
 				foreach ( $payments_array as $payment_id ) {
-					give_update_payment_meta( $payment_id, '_give_payment_customer_id', 0 );
+					give_update_payment_meta( $payment_id, '_give_payment_donor_id', 0 );
 				}
 			}
 
@@ -382,14 +382,9 @@ function give_disconnect_donor_user_id( $args ) {
 		'user_id' => 0,
 	);
 
-	if ( $donor->update( $donor_args ) ) {
-		global $wpdb;
 
-		if ( ! empty( $donor->payment_ids ) ) {
-			$wpdb->query( "UPDATE $wpdb->postmeta SET meta_value = 0 WHERE meta_key = '_give_payment_user_id' AND post_id IN ( $donor->payment_ids )" );
-		}
-
-		// Set Donor Disconnection status true, if user and donor are disconnected with each other.
+	$output['success'] = true;
+	if ( ! $donor->update( $donor_args ) ) {
 		update_user_meta( $user_id, '_give_is_donor_disconnected', true );
 		update_user_meta( $user_id, '_give_disconnected_donor_id', $donor->id );
 		$donor->update_meta( '_give_disconnected_user_id', $user_id );
@@ -397,7 +392,6 @@ function give_disconnect_donor_user_id( $args ) {
 		$output['success'] = true;
 
 	} else {
-
 		$output['success'] = false;
 		give_set_error( 'give-disconnect-user-fail', __( 'Failed to disconnect user from donor.', 'give' ) );
 	}

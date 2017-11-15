@@ -35,14 +35,17 @@ class Give_DB_Donors extends Give_DB {
 		/* @var WPDB $wpdb */
 		global $wpdb;
 
-		$this->table_name  = $wpdb->prefix . 'give_customers';
+		$wpdb->donors      = $this->table_name = "{$wpdb->prefix}give_donors";
 		$this->primary_key = 'id';
 		$this->version     = '1.0';
+
+		$this->bc_200_params();
 
 		// Set hooks and register table only if instance loading first time.
 		if ( ! ( Give()->donors instanceof Give_DB_Donors ) ) {
 			// Setup hook.
 			add_action( 'profile_update', array( $this, 'update_donor_email_on_user_update' ), 10, 2 );
+			add_action( 'edit_user_profile_update', array( $this, 'update_donor_info_on_user_update' ), 11, 2 );
 
 			// Install table.
 			$this->register_table();
@@ -96,10 +99,10 @@ class Give_DB_Donors extends Give_DB {
 	/**
 	 * Add a donor
 	 *
+	 * @param  array $data List of donor data to add.
+	 *
 	 * @since  1.0
 	 * @access public
-	 *
-	 * @param  array $data
 	 *
 	 * @return int|bool
 	 */
@@ -162,10 +165,10 @@ class Give_DB_Donors extends Give_DB {
 	 * NOTE: This should not be called directly as it does not make necessary changes to
 	 * the payment meta and logs. Use give_donor_delete() instead.
 	 *
+	 * @param  bool|string|int $_id_or_email ID or Email of Donor.
+	 *
 	 * @since  1.0
 	 * @access public
-	 *
-	 * @param  bool|string|int $_id_or_email
 	 *
 	 * @return bool|int
 	 */
@@ -234,11 +237,11 @@ class Give_DB_Donors extends Give_DB {
 	/**
 	 * Checks if a donor exists
 	 *
-	 * @since  1.0
-	 * @access public
-	 *
 	 * @param  string $value The value to search for. Default is empty.
 	 * @param  string $field The Donor ID or email to search in. Default is 'email'.
+	 *
+	 * @since  1.0
+	 * @access public
 	 *
 	 * @return bool          True is exists, false otherwise.
 	 */
@@ -360,6 +363,9 @@ class Give_DB_Donors extends Give_DB {
 	 *
 	 * @param  int          $user_id       User ID.
 	 * @param  WP_User|bool $old_user_data User data.
+	 *
+	 * @since  1.4.3
+	 * @access public
 	 *
 	 * @return bool
 	 */
@@ -588,15 +594,22 @@ class Give_DB_Donors extends Give_DB {
 	}
 
 	/**
-	 * Check if the Customers table was ever installed
+	 * Add backward compatibility for old table name
 	 *
-	 * @since  1.4.3
-	 * @access public
-	 *
-	 * @return bool Returns if the donors table was installed and upgrade routine run.
+	 * @since  2.0
+	 * @access private
+	 * @global wpdb $wpdb
 	 */
-	public function installed() {
-		return $this->table_exists( $this->table_name );
+	private function bc_200_params() {
+		/* @var wpdb $wpdb */
+		global $wpdb;
+
+		if (
+			! give_has_upgrade_completed( 'v20_rename_donor_tables' ) &&
+			$wpdb->query( $wpdb->prepare( "SHOW TABLES LIKE %s", "{$wpdb->prefix}give_customers" ) )
+		) {
+			$wpdb->donors = $this->table_name = "{$wpdb->prefix}give_customers";
+		}
 	}
 
 	/**
@@ -643,6 +656,39 @@ class Give_DB_Donors extends Give_DB {
 				$args['date_query']['month'] = date( 'm', strtotime( $args['date'] ) );
 				$args['date_query']['day']   = date( 'd', strtotime( $args['date'] ) );
 			}
+		}
+	}
+
+	/**
+	 * Update Donor Information when User Profile is updated from admin.
+	 *
+	 * @param int $user_id
+	 *
+	 * @access public
+	 * @since  2.0
+	 *
+	 * @return bool
+	 */
+	public function update_donor_info_on_user_update( $user_id = 0 ) {
+
+		if ( current_user_can( 'edit_user', $user_id ) ) {
+
+			$donor = new Give_Donor( $user_id, true );
+
+			// Bailout, if donor doesn't exists.
+			if ( ! $donor ) {
+				return false;
+			}
+
+			// Get User First name and Last name.
+			$first_name = ( $_POST['first_name'] ) ? give_clean( $_POST['first_name'] ) : get_user_meta( $user_id, 'first_name', true );
+			$last_name  = ( $_POST['last_name'] ) ? give_clean( $_POST['last_name'] ) : get_user_meta( $user_id, 'last_name', true );
+			$full_name  = strip_tags( wp_unslash( trim( "{$first_name} {$last_name}" ) ) );
+
+			// Assign User First name and Last name to Donor.
+			Give()->donors->update( $donor->id, array( 'name' => $full_name ) );
+			Give()->donor_meta->update_meta( $donor->id, '_give_donor_first_name', $first_name );
+			Give()->donor_meta->update_meta( $donor->id, '_give_donor_last_name', $last_name );
 
 		}
 	}

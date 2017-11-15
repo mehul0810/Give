@@ -104,11 +104,12 @@ function give_connect_donor_to_wpuser( $user_id, $user_data ) {
 			$donor->add_note( $donor_note );
 
 			// Update user_id meta in payments.
-			if ( ! empty( $donor->payment_ids ) && ( $donations = explode( ',', $donor->payment_ids ) ) ) {
-				foreach ( $donations as $donation ) {
-					give_update_meta( $donation, '_give_payment_user_id', $user_id );
-				}
-			}
+			// if( ! empty( $donor->payment_ids ) && ( $donations = explode( ',', $donor->payment_ids ) ) ) {
+			// 	foreach ( $donations as $donation  ) {
+			// 		give_update_meta( $donation, '_give_payment_user_id', $user_id );
+			// 	}
+			// }
+			// Do not need to update user_id in payment because we will get user id from donor id now.
 		}
 	}
 }
@@ -245,8 +246,7 @@ add_action( 'admin_head', 'give_admin_quick_css' );
 /**
  * Set Donation Amount for Multi Level Donation Forms
  *
- * @param int    $form_id
- * @param object $form
+ * @param int $form_id
  *
  * @since 1.8.9
  *
@@ -277,3 +277,57 @@ function give_set_donation_levels_max_min_amount( $form_id ) {
 }
 
 add_action( 'give_pre_process_give_forms_meta', 'give_set_donation_levels_max_min_amount', 30 );
+
+
+/**
+ * Save donor address when donation complete
+ *
+ * @since 2.0
+ *
+ * @param int $payment_id
+ */
+function _give_save_donor_billing_address( $payment_id ) {
+	/* @var Give_Payment $donation */
+	$donation = new Give_Payment( $payment_id );
+
+	// Bailout
+	if ( ! $donation->customer_id ) {
+		return;
+	}
+
+
+	/* @var Give_Donor $donor */
+	$donor = new Give_Donor( $donation->customer_id );
+
+	// Save address.
+	$donor->add_address( 'billing[]', $donation->address );
+}
+
+add_action( 'save_post_give_payment', '_give_save_donor_billing_address', 9999 );
+
+
+/**
+ * Update form id in payment logs
+ * This function will be use by cron to sync form id ( if changes ) between payment and log.
+ *
+ * @since 2.0
+ *
+ * @param $new_form_id
+ * @param $payment_id
+ */
+function __give_update_log_form_id( $new_form_id, $payment_id ) {
+	$logs = Give()->logs->get_logs( $payment_id );
+
+	// Bailout.
+	if ( empty( $logs ) ) {
+		return;
+	}
+
+	/* @var object $log */
+	foreach ( $logs as $log ) {
+		Give()->logs->logmeta_db->update_meta( $log->ID, '_give_log_form_id', $new_form_id );
+	}
+
+	// Delete cache.
+	Give()->logs->delete_cache();
+}

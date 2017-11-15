@@ -19,9 +19,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Handles the donation form process.
  *
- * @access      private
- * @since       1.0
- * @return      false|null
+ * @access private
+ * @since  1.0
+ *
+ * @return false|null
  */
 function give_process_donation_form() {
 
@@ -299,21 +300,10 @@ function give_donation_form_validate_fields() {
 		give_donation_form_validate_agree_to_terms();
 	}
 
-	// Stop processing donor registration, if donor registration is optional and donor can do guest checkout.
-	// If registration form username field is empty that means donor do not want to registration instead want guest checkout.
-	if (
-		! give_logged_in_only( $form_id )
-		&& isset( $_POST['give-purchase-var'] )
-		&& $_POST['give-purchase-var'] == 'needs-to-register'
-		&& empty( $_POST['give_user_login'] )
-	) {
-		unset( $_POST['give-purchase-var'] );
-	}
-
 	if ( is_user_logged_in() ) {
 		// Collect logged in user data.
 		$valid_data['logged_in_user'] = give_donation_form_validate_logged_in_user();
-	} elseif ( isset( $_POST['give-purchase-var'] ) && $_POST['give-purchase-var'] == 'needs-to-register' ) {
+	} elseif ( isset( $_POST['give-purchase-var'] ) && $_POST['give-purchase-var'] == 'needs-to-register' && ! empty( $_POST['give_create_account'] ) ) {
 		// Set new user registration as required.
 		$valid_data['need_new_user'] = true;
 		// Validate new user data.
@@ -613,6 +603,9 @@ function give_donation_form_validate_logged_in_user() {
  * @return      array
  */
 function give_donation_form_validate_new_user() {
+
+	$auto_generated_password = wp_generate_password();
+
 	// Default user data.
 	$default_user_data = array(
 		'give-form-id'           => '',
@@ -621,8 +614,8 @@ function give_donation_form_validate_new_user() {
 		'user_last'              => '',
 		'give_user_login'        => false,
 		'give_email'             => false,
-		'give_user_pass'         => false,
-		'give_user_pass_confirm' => false,
+		'give_user_pass'         => $auto_generated_password,
+		'give_user_pass_confirm' => $auto_generated_password,
 	);
 
 	// Get user data.
@@ -640,6 +633,9 @@ function give_donation_form_validate_new_user() {
 
 		// Get last name.
 		'user_last'  => $user_data['give_last'],
+
+		// Get Password.
+		'user_pass'  => $user_data['give_user_pass'],
 	);
 
 	// Loop through required fields and show error messages.
@@ -649,21 +645,12 @@ function give_donation_form_validate_new_user() {
 		}
 	}
 
-	// Check if we have an username to register.
-	if ( give_validate_username( $user_data['give_user_login'] ) ) {
-		$registering_new_user          = true;
-		$valid_user_data['user_login'] = $user_data['give_user_login'];
-	}
+	// Set Email as Username.
+	$valid_user_data['user_login'] = $user_data['give_email'];
 
 	// Check if we have an email to verify.
 	if ( give_validate_user_email( $user_data['give_email'], $registering_new_user ) ) {
 		$valid_user_data['user_email'] = $user_data['give_email'];
-	}
-
-	// Check password.
-	if ( give_validate_user_password( $user_data['give_user_pass'], $user_data['give_user_pass_confirm'], $registering_new_user ) ) {
-		// All is good to go.
-		$valid_user_data['user_pass'] = $user_data['give_user_pass'];
 	}
 
 	return $valid_user_data;

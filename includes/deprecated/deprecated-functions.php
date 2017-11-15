@@ -20,15 +20,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Deprecated global variables.
  *
  * @since 2.0
- *
- * @param Give $give_object
  */
 function _give_load_deprecated_global_params( $give_object ) {
+	$GLOBALS['give_logs'] = Give()->logs;
 	$GLOBALS['give_cron'] = Give_Cron::get_instance();
 }
 
 add_action( 'give_init', '_give_load_deprecated_global_params' );
-
 
 
 /**
@@ -457,7 +455,6 @@ function give_purchase_total_of_user( $user = null ) {
  * Deletes a Donation
  *
  * @since  1.0
- * @global      $give_logs
  *
  * @param  int  $payment_id      Payment ID (default: 0).
  * @param  bool $update_customer If we should update the customer stats (default:true).
@@ -541,7 +538,6 @@ function give_increase_purchase_count( $form_id = 0, $quantity = 1 ) {
  * Stores log information for a donation.
  *
  * @since 1.0
- * @global            $give_logs Give_Logging
  *
  * @param int         $give_form_id Give Form ID.
  * @param int         $payment_id   Payment ID.
@@ -625,7 +621,43 @@ function give_get_purchase_summary( $purchase_data, $email = true ) {
 }
 
 /**
- * Generate Item Title for Payment Gateway
+ * Retrieves the emails for which admin notifications are sent to (these can be changed in the Give Settings).
+ *
+ * @since 1.0
+ * @deprecated 2.0
+ *
+ * @return mixed
+ */
+function give_get_admin_notice_emails() {
+
+	$email_option = give_get_option( 'admin_notice_emails' );
+
+	$emails = ! empty( $email_option ) && strlen( trim( $email_option ) ) > 0 ? $email_option : get_bloginfo( 'admin_email' );
+	$emails = array_map( 'trim', explode( "\n", $emails ) );
+
+	return apply_filters( 'give_admin_notice_emails', $emails );
+}
+
+/**
+ * Checks whether admin donation notices are disabled
+ *
+ * @since 1.0
+ * @deprecated 2.0
+ *
+ * @param int $payment_id
+ *
+ * @return mixed
+ */
+function give_admin_notices_disabled( $payment_id = 0 ) {
+	return apply_filters(
+		'give_admin_notices_disabled',
+		! give_is_setting_enabled( Give_Email_Notification::get_instance('new-donation' )->get_notification_status() ),
+		$payment_id
+	);
+}
+
+
+/** Generate Item Title for Payment Gateway
  *
  * @param array $payment_data Payment Data.
  *

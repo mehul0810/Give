@@ -100,6 +100,12 @@ function give_run_install() {
 
 	flush_rewrite_rules();
 
+	// Create the donor databases.
+	$donors_db = new Give_DB_Donors();
+	$donors_db->create_table();
+	$donor_meta = new Give_DB_Donor_Meta();
+	$donor_meta->create_table();
+
 	// Check for PHP Session support, and enable if available.
 	$give_sessions = new Give_Session();
 	$give_sessions->use_php_sessions();
@@ -122,7 +128,12 @@ function give_run_install() {
 			'v1812_update_amount_values',
 			'v1812_update_donor_purchase_values',
 			'v1813_update_user_roles',
-			'v1813_update_donor_user_roles'
+			'v1813_update_donor_user_roles',
+			'v20_upgrades_form_metadata',
+			'v20_logs_upgrades',
+			'v20_move_metadata_into_new_table',
+			'v20_rename_donor_tables',
+			'v20_upgrades_donor_name'
 		);
 
 		foreach ( $upgrade_routines as $upgrade ) {
@@ -375,6 +386,8 @@ function give_get_default_agreement_text() {
  * This function will install give related page which is not created already.
  *
  * @since 1.8.11
+ *
+ * @return void
  */
 function give_create_pages(){
 

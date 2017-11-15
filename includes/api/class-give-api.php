@@ -169,6 +169,32 @@ class Give_API {
 	}
 
 	/**
+	 * There are certain responsibility of this function:
+	 *  1. handle backward compatibility for deprecated functions
+	 *
+	 * @since 2.0
+	 *
+	 * @param $name
+	 * @param $arguments
+	 *
+	 * @return mixed
+	 */
+	public function __call( $name, $arguments ) {
+		$deprecated_function_arr = array(
+			'get_customers',
+		);
+
+		if ( in_array( $name, $deprecated_function_arr, true ) ) {
+			switch ( $name ) {
+				case 'get_customers':
+					$args = ! empty( $arguments[0] ) ? $arguments[0] : array();
+
+					return $this->get_donors( $args );
+			}
+		}
+	}
+
+	/**
 	 * Registers a new rewrite endpoint for accessing the API
 	 *
 	 * @access public
@@ -1409,7 +1435,7 @@ class Give_API {
 		} elseif ( isset( $wp_query->query_vars['email'] ) ) {
 			$args  = array(
 				'fields'     => 'ids',
-				'meta_key'   => '_give_payment_user_email',
+				'meta_key'   => '_give_payment_donor_email',
 				'meta_value' => $wp_query->query_vars['email'],
 				'number'     => $this->per_page(),
 				'page'       => $this->get_paged(),
@@ -1575,7 +1601,6 @@ class Give_API {
 	 * @access private
 	 * @since  1.1
 	 *
-	 * @global Give_Logging $give_logs
 	 * @global WP_Query     $wp_query
 	 *
 	 * @param array         $data
@@ -1586,11 +1611,6 @@ class Give_API {
 		if ( ! $this->log_requests ) {
 			return;
 		}
-
-		/**
-		 * @var Give_Logging $give_logs
-		 */
-		global $give_logs;
 
 		/**
 		 * @var WP_Query $wp_query
@@ -1628,7 +1648,7 @@ class Give_API {
 			'version'    => $this->get_queried_version(),
 		);
 
-		$give_logs->insert_log( $log_data, $log_meta );
+		Give()->logs->insert_log( $log_data, $log_meta );
 	}
 
 

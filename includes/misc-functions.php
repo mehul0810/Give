@@ -969,10 +969,17 @@ function _give_deprecated_function( $function, $version, $replacement = null, $b
  * @return string $post_id
  */
 function give_get_admin_post_id() {
-	$post_id = isset( $_GET['post'] ) ? $_GET['post'] : null;
-	if ( ! $post_id && isset( $_POST['post_id'] ) ) {
-		$post_id = $_POST['post_id'];
-	}
+	$post_id = isset( $_REQUEST['post'] )
+		? absint( $_REQUEST['post'] )
+		: null;
+
+	$post_id = ! empty( $post_id )
+		? $post_id
+		: ( isset( $_REQUEST['post_id'] ) ? absint( $_REQUEST['post_id'] ) : null );
+
+	$post_id = ! empty( $post_id )
+		? $post_id
+		: ( isset( $_REQUEST['post_ID'] ) ? absint( $_REQUEST['post_ID'] ) : null );
 
 	return $post_id;
 }
@@ -1020,6 +1027,7 @@ function give_is_func_disabled( $function ) {
 
 	return in_array( $function, $disabled );
 }
+
 
 /**
  * Give Newsletter
@@ -1495,6 +1503,21 @@ function give_delete_donation_stats( $date_range = '', $args = array() ) {
 	return $status;
 }
 
+/**
+ * Check if admin creating new donation form or not.
+ *
+ * @since 2.0
+ * @return bool
+ */
+function give_is_add_new_form_page() {
+	$status = false;
+
+	if ( false !== strpos( $_SERVER['REQUEST_URI'], '/wp-admin/post-new.php?post_type=give_forms' ) ) {
+		$status = true;
+	}
+
+	return $status;
+}
 
 /**
  * Get Form/Payment meta.
@@ -1508,7 +1531,7 @@ function give_delete_donation_stats( $date_range = '', $args = array() ) {
  *
  * @return mixed
  */
-function give_get_meta( $id, $meta_key, $single = false, $default = false ) {
+function give_get_meta( $id, $meta_key = '', $single = false, $default = false ) {
 	/**
 	 * Filter the meta value
 	 *
@@ -1656,16 +1679,86 @@ function give_get_completed_upgrades() {
 }
 
 /**
+ * Get attribute string
+ *
+ * @since 2.0
+ *
+ * @param array $attributes
+ *
+ * @return string
+ */
+function give_get_attribute_str( $attributes ) {
+	$attribute_str = '';
+
+	if ( empty( $attributes ) ) {
+		return $attribute_str;
+	}
+
+	foreach ( $attributes as $tag => $value ) {
+		$attribute_str .= " {$tag}=\"{$value}\"";
+	}
+
+	return trim( $attribute_str );
+}
+
+
+/**
+ * In 2.0 we updated table for log, payment and form.
+ *
+ * Note: internal purpose only.
+ *
+ * @since 2.0
+ * @global wpdb  $wpdb
+ *
+ * @param string $type Context for table
+ *
+ * @return null|array
+ */
+function __give_v20_bc_table_details( $type ) {
+	global $wpdb;
+	$table = array();
+
+	// Bailout.
+	if ( empty( $type ) ) {
+		return null;
+	}
+
+	switch ( $type ) {
+		case 'form':
+			$table['name']         = $wpdb->formmeta;
+			$table['column']['id'] = 'form_id';
+
+			break;
+
+		case 'payment':
+			$table['name']         = $wpdb->paymentmeta;
+			$table['column']['id'] = 'payment_id';
+	}
+
+	// Backward compatibility.
+	if ( ! give_has_upgrade_completed( 'v20_move_metadata_into_new_table' ) ) {
+		$table['name']         = $wpdb->postmeta;
+		$table['column']['id'] = 'post_id';
+	}
+
+
+	return $table;
+}
+
+/**
  * Remove the Give transaction pages from WP search results.
  *
  * @since 1.8.13
  *
- * @param \WP_Query
+ * @param WP_Query $query
  */
 function give_remove_pages_from_search( $query ) {
+
 	if ( ! $query->is_admin && $query->is_search && $query->is_main_query() ) {
+
 		$transaction_failed = give_get_option( 'failure_page', 0 );
 		$success_page       = give_get_option( 'success_page', 0 );
+
 		$args               = apply_filters(
 			'give_remove_pages_from_search', array(
 				$transaction_failed,
@@ -1873,14 +1966,17 @@ function update_donor_meta( $donor_id, $meta_key, $meta_value, $prev_value = '' 
 	return update_metadata( 'give_customer', $donor_id, $meta_key, $meta_value, $prev_value );
 }
 
-/*
+
+/**
  * Give recalculate income and donation of the donation from ID
  *
  * @since 1.8.13
  *
  * @param int $form_id Form id of which recalculation needs to be done.
+ *
+ * @return void
  */
-function give_recount_form_income_donation( $form_id = false ) {
+function give_recount_form_income_donation( $form_id = 0 ) {
 	// Check if form id is not empty.
 	if ( ! empty( $form_id ) ) {
 		/**

@@ -5,7 +5,7 @@
  * Description: The most robust, flexible, and intuitive way to accept donations on WordPress.
  * Author: WordImpress
  * Author URI: https://wordimpress.com
- * Version: 1.8.16
+ * Version: 2.0.0
  * Text Domain: give
  * Domain Path: /languages
  * GitHub Plugin URI: https://github.com/WordImpress/Give
@@ -33,8 +33,7 @@
  * Give is a tribute to the spirit and philosophy of Open Source. We at WordImpress gladly embrace the Open Source philosophy both
  * in how Give itself was developed, and how we hope to see others build more from our code base.
  *
- * Give would not have been possible without the tireless efforts of WordPress and the surrounding Open Source projects and their talented developers. Thank you all for your
- * contribution to WordPress.
+ * Give would not have been possible without the tireless efforts of WordPress and the surrounding Open Source projects and their talented developers. Thank you all for your contribution to WordPress.
  *
  * - The WordImpress Team
  */
@@ -178,14 +177,43 @@ if ( ! class_exists( 'Give' ) ) :
 		public $email_access;
 
 		/**
-		 * Give notices Object
+		 * Give_tooltips Object
 		 *
 		 * @since  1.8.9
 		 * @access public
 		 *
+		 * @var    Give_Tooltips object
+		 */
+		public $tooltips;
+
+		/**
+		 * Give notices Object
+		 *
 		 * @var    Give_Notices $notices
 		 */
 		public $notices;
+
+
+		/**
+		 * Give logging Object
+		 *
+		 * @var    Give_Logging $logs
+		 */
+		public $logs;
+
+		/**
+		 * Give payment Object
+		 *
+		 * @var    Give_DB_Payment_Meta $payment_meta
+		 */
+		public $payment_meta;
+
+		/**
+		 * Give form Object
+		 *
+		 * @var    Give_DB_Form_Meta $form_meta
+		 */
+		public $form_meta;
 
 		/**
 		 * Main Give Instance
@@ -242,6 +270,7 @@ if ( ! class_exists( 'Give' ) ) :
 			register_activation_hook( __FILE__, 'give_install' );
 			add_action( 'plugins_loaded', array( $this, 'init' ), 0 );
 		}
+
 		/**
 		 * Init Give when WordPress Initializes.
 		 *
@@ -270,7 +299,11 @@ if ( ! class_exists( 'Give' ) ) :
 			$this->donor_meta      = new Give_DB_Donor_Meta();
 			$this->template_loader = new Give_Template_Loader();
 			$this->email_access    = new Give_Email_Access();
+			$this->tooltips        = new Give_Tooltips();
 			$this->notices         = new Give_Notices();
+			$this->payment_meta    = new Give_DB_Payment_Meta();
+			$this->logs            = new Give_Logging();
+			$this->form_meta       = new Give_DB_Form_Meta();
 
 			/**
 			 * Fire the action after Give core loads.
@@ -324,7 +357,7 @@ if ( ! class_exists( 'Give' ) ) :
 
 			// Plugin version
 			if ( ! defined( 'GIVE_VERSION' ) ) {
-				define( 'GIVE_VERSION', '1.8.16' );
+				define( 'GIVE_VERSION', '2.0.0' );
 			}
 
 			// Plugin Folder Path
@@ -377,12 +410,15 @@ if ( ! class_exists( 'Give' ) ) :
 			require_once GIVE_PLUGIN_DIR . 'includes/actions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/filters.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/api/class-give-api.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/class-give-tooltips.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-notices.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/class-give-translation.php';
 
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-roles.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-template-loader.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-donate-form.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-db.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/class-give-db-meta.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-db-donors.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-db-donor-meta.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-donor.php';
@@ -392,6 +428,8 @@ if ( ! class_exists( 'Give' ) ) :
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-logging.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-license-handler.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/class-give-email-access.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/class-give-db-payment-meta.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/class-give-db-form-meta.php';
 
 			require_once GIVE_PLUGIN_DIR . 'includes/country-functions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/template-functions.php';
@@ -413,6 +451,7 @@ if ( ! class_exists( 'Give' ) ) :
 			require_once GIVE_PLUGIN_DIR . 'includes/deprecated/deprecated-actions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/deprecated/deprecated-filters.php';
 
+			require_once GIVE_PLUGIN_DIR . 'includes/payments/backward-compatibility.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/payments/functions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/payments/actions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/payments/class-payment-stats.php';
@@ -427,6 +466,7 @@ if ( ! class_exists( 'Give' ) ) :
 
 			require_once GIVE_PLUGIN_DIR . 'includes/emails/class-give-emails.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/emails/class-give-email-tags.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/admin/emails/class-email-notifications.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/emails/functions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/emails/template.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/emails/actions.php';
