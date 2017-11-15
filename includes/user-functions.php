@@ -212,7 +212,7 @@ function give_get_donation_stats_by_user( $user = '' ) {
 	if ( $donor ) {
 		$donor = new Give_Donor( $donor->id );
 		$stats['purchases']   = absint( $donor->purchase_count );
-		$stats['total_spent'] = give_maybe_sanitize_amount( $donor->purchase_value );
+		$stats['total_spent'] = give_maybe_sanitize_amount( $donor->get_total_donation_amount() );
 	}
 
 	/**
@@ -506,7 +506,11 @@ function give_get_donor_address( $donor_id = null, $args = array() ) {
 	$donor = new Give_Donor( $donor_id, $by_user_id );
 
 
-	if ( ! $donor->id || ! array_key_exists( 'billing', $donor->address ) ) {
+	if (
+		! $donor->id ||
+		empty( $donor->address ) ||
+		! array_key_exists( $args['address_type'], $donor->address )
+	) {
 		return $default_address;
 	}
 

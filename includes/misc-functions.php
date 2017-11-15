@@ -996,6 +996,7 @@ function give_is_terms_enabled( $form_id ) {
  * @return WP_Error|bool
  */
 function give_delete_donation_stats( $date_range = '', $args = array() ) {
+
 	// Delete all cache.
 	$status = Give_Cache::delete( Give_Cache::get_options_like( 'give_stats' ) );
 
@@ -1194,30 +1195,6 @@ function give_set_upgrade_complete( $upgrade_action = '' ) {
 function give_get_completed_upgrades() {
 	return (array) get_option( 'give_completed_upgrades' );
 }
-
-/**
- * Get attribute string
- *
- * @since 2.0
- *
- * @param array $attributes
- *
- * @return string
- */
-function give_get_attribute_str( $attributes ) {
-	$attribute_str = '';
-
-	if ( empty( $attributes ) ) {
-		return $attribute_str;
-	}
-
-	foreach ( $attributes as $tag => $value ) {
-		$attribute_str .= " {$tag}=\"{$value}\"";
-	}
-
-	return trim( $attribute_str );
-}
-
 
 /**
  * In 2.0 we updated table for log, payment and form.
