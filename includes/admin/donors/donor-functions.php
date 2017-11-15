@@ -87,6 +87,7 @@ add_filter( 'give_donor_tabs', 'give_register_delete_donor_tab', PHP_INT_MAX, 1 
 
 /**
  * Connect and Reconnect Donor with User profile.
+ * @todo $address is unnecessary param because we are store address to user.
  *
  * @param object $donor      Donor Object.
  * @param array  $donor_data Donor Post Variables.
@@ -115,19 +116,6 @@ function give_connect_user_donor_profile( $donor, $donor_data, $address ) {
 	$output = array();
 
 	if ( $donor->update( $donor_data ) ) {
-
-		if ( ! empty( $donor->user_id ) && $donor->user_id > 0 ) {
-			update_user_meta( $donor->user_id, '_give_user_address', $address );
-		}
-
-		// Update some donation meta if we need to.
-		$payments_array = explode( ',', $donor->payment_ids );
-
-		if ( $donor->user_id !== $previous_user_id ) {
-			foreach ( $payments_array as $payment_id ) {
-				give_update_payment_meta( $payment_id, '_give_payment_user_id', $donor->user_id );
-			}
-		}
 
 		// Fetch disconnected user id, if exists.
 		$disconnected_user_id = $donor->get_meta( '_give_disconnected_user_id', true );
@@ -164,4 +152,61 @@ function give_connect_user_donor_profile( $donor, $donor_data, $address ) {
 
 
 	return $output;
+}
+
+/**
+ * Delete Donor using Bulk Actions.
+ *
+ * @param int   $donor_id Donor ID.
+ * @param array $args     An Array of Additional Donor Arguments.
+ *
+ * @since 1.8.17
+ *
+ * @return bool
+ */
+function give_delete_bulk_donors( $donor_id, $args ) {
+	$donor_edit_role = apply_filters( 'give_edit_donors_role', 'edit_give_payments' );
+
+	if ( ! is_admin() || ! current_user_can( $donor_edit_role ) ) {
+		wp_die( __( 'You do not have permission to delete donors.', 'give' ), __( 'Error', 'give' ), array(
+			'response' => 403,
+		) );
+	}
+
+	// Bail Out, if Donor ID doesn't exists.
+	if ( empty( $donor_id ) ) {
+		return false;
+	}
+
+	$nonce = $args['_wpnonce'];
+
+	// Verify Nonce for deleting bulk donors.
+	if ( ! wp_verify_nonce( $nonce, 'delete-bulk-donors' ) ) {
+		wp_die( __( 'Cheatin&#8217; uh?', 'give' ), __( 'Error', 'give' ), array(
+			'response' => 400,
+		) );
+	}
+
+	$donor = new Give_Donor( $donor_id );
+
+	if ( $donor->id > 0 ) {
+		$payments_ids  = explode( ',', $donor->payment_ids );
+		$donor_deleted = Give()->donors->delete( $donor->id );
+
+		if ( $donor_deleted ) {
+
+			// Remove all donations, logs, etc.
+			foreach ( $payments_ids as $payment_id ) {
+				give_delete_donation( $payment_id );
+			}
+		} else {
+
+			// Just set the donations to customer_id of 0.
+			foreach ( $payments_ids as $payment_id ) {
+				give_update_payment_meta( $payment_id, '_give_payment_customer_id', 0 );
+			}
+		}
+
+	}
+
 }
