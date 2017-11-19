@@ -141,6 +141,7 @@ form.give-form {
 	.give-hidden {
 		display: none;
 	}
+
 	.give-tooltip {
 		margin: 0 3px;
 		padding: 0;
@@ -153,9 +154,9 @@ form.give-form {
 		}
 	}
 
-	legend,
 	h3.give-section-break,
-	h4.give-section-break {
+	h4.give-section-break,
+	legend {
 		font-size: 1.15em;
 		font-weight: bold;
 		margin: 10px 0 15px;
@@ -759,6 +760,17 @@ Basic Button Style
 		background: #dbdbdb;
 	}
 
+}
+
+/*---------------------------------
+Profile Editor Form
+-----------------------------------*/
+#give_profile_editor_form {
+	legend {
+		width: auto;
+		padding: 0 5px 5px 5px;
+		border-bottom: 0;
+	}
 }
 
 /*---------------------------------

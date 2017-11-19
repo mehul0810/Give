@@ -23,7 +23,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return string
  */
-function give_donation_history() {
+function give_donation_history( $atts ) {
+
+	$donation_history_args = shortcode_atts( array(
+		'id'             => true,
+		'date'           => true,
+		'donor'          => false,
+		'amount'         => true,
+		'status'         => false,
+		'payment_method' => false,
+	), $atts, 'donation_history' );
+
+	// Always show receipt link.
+	$donation_history_args['details'] = true;
+
+	// Set Donation History Shortcode Arguments in session variable.
+	Give()->session->set( 'give_donation_history_args', $donation_history_args );
 
 	// If payment_key query arg exists, return receipt instead of donation history.
 	if ( isset( $_GET['payment_key'] ) ) {
@@ -331,6 +346,13 @@ function give_profile_editor_shortcode( $atts ) {
 
 	ob_start();
 
+	// Restrict access to donor profile, if donor and user are disconnected.
+	$is_donor_disconnected = get_user_meta( get_current_user_id(), '_give_is_donor_disconnected', true );
+	if( is_user_logged_in() && $is_donor_disconnected ) {
+		Give()->notices->print_frontend_notice( __( 'Your Donor and User profile are no longer connected. Please contact the site administrator.', 'give' ), true, 'error' );
+		return false;
+	}
+
 	give_get_template_part( 'shortcode', 'profile-editor' );
 
 	$display = ob_get_clean();
@@ -364,6 +386,9 @@ function give_process_profile_editor_updates( $data ) {
 
 	$user_id       = get_current_user_id();
 	$old_user_data = get_userdata( $user_id );
+
+	/* @var Give_Donor $donor */
+	$donor = new Give_Donor( $user_id, true );
 
 	$display_name = isset( $data['give_display_name'] ) ? sanitize_text_field( $data['give_display_name'] ) : $old_user_data->display_name;
 	$first_name   = isset( $data['give_first_name'] ) ? sanitize_text_field( $data['give_first_name'] ) : $old_user_data->first_name;
@@ -429,13 +454,16 @@ function give_process_profile_editor_updates( $data ) {
 	}
 
 	// Update Donor First Name and Last Name.
-	$donor   = Give()->donors->get_donor_by( 'user_id', $user_id );
 	Give()->donors->update( $donor->id, array( 'name' => $full_name ) );
 	Give()->donor_meta->update_meta( $donor->id, '_give_donor_first_name', $first_name );
 	Give()->donor_meta->update_meta( $donor->id, '_give_donor_last_name', $last_name );
 
+	// Update donor address.
+	if( ! $donor->update_address( 'personal', $address ) ) {
+		$donor->add_address( 'personal', $address );
+	}
+
 	// Update the user.
-	$meta    = update_user_meta( $user_id, '_give_user_address', $address );
 	$updated = wp_update_user( $userdata );
 
 	if ( $updated ) {
