@@ -121,6 +121,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'name'    => esc_html__( 'Currency', 'give' ),
 							'desc'    => esc_html__( 'The donation currency. Note that some payment gateways have currency restrictions.', 'give' ),
 							'id'      => 'currency',
+							'class'   => 'give-select-chosen',
 							'type'    => 'select',
 							'options' => give_get_currencies(),
 							'default' => 'USD',
@@ -132,9 +133,9 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => array(
 								/* translators: %s: currency symbol */
-								'before' => sprintf( esc_html__( 'Before - %s10', 'give' ), give_currency_symbol( give_get_currency() ) ),
+								'before' => sprintf( esc_html__( 'Before - %s&#x200e;10', 'give' ), give_currency_symbol( give_get_currency() ) ),
 								/* translators: %s: currency symbol */
-								'after'  => sprintf( esc_html__( 'After - 10%s', 'give' ), give_currency_symbol( give_get_currency() ) )
+								'after'  => sprintf( esc_html__( 'After - 10%s&#x200f;', 'give' ), give_currency_symbol( give_get_currency() ) ),
 							),
 							'default' => 'before',
 						),
@@ -206,7 +207,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => give_cmb2_get_post_options( array(
 								'post_type'   => 'page',
-								'numberposts' => - 1
+								'numberposts' =>  999
 							) ),
 						),
 						array(
@@ -216,7 +217,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => give_cmb2_get_post_options( array(
 								'post_type'   => 'page',
-								'numberposts' => - 1
+								'numberposts' => 999
 							) ),
 						),
 						array(
@@ -227,7 +228,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => give_cmb2_get_post_options( array(
 								'post_type'   => 'page',
-								'numberposts' => - 1
+								'numberposts' => 999
 							) ),
 						),
 						array(

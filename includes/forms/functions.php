@@ -440,7 +440,9 @@ function give_increase_earnings( $give_form_id = 0, $amount ) {
 }
 
 /**
- * Decreases the total earnings of a form. Primarily for when a donation is refunded.
+ * Decreases the total earnings of a form.
+ *
+ * Primarily for when a donation is refunded.
  *
  * @since 1.0
  *
@@ -449,7 +451,8 @@ function give_increase_earnings( $give_form_id = 0, $amount ) {
  *
  * @return bool|int
  */
-function give_decrease_earnings( $form_id = 0, $amount ) {
+function give_decrease_form_earnings( $form_id = 0, $amount ) {
+
 	$form = new Give_Donate_Form( $form_id );
 
 	return $form->decrease_earnings( $amount );
@@ -468,7 +471,12 @@ function give_decrease_earnings( $form_id = 0, $amount ) {
 function give_get_form_earnings_stats( $form_id = 0 ) {
 	$give_form = new Give_Donate_Form( $form_id );
 
-	return $give_form->earnings;
+	/**
+	 * Filter the form earnings
+	 *
+	 * @since 1.8.17
+	 */
+	return apply_filters( 'give_get_form_earnings_stats', $give_form->earnings, $form_id, $give_form );
 }
 
 
@@ -545,13 +553,14 @@ function give_get_average_monthly_form_earnings( $form_id = 0 ) {
  *
  * @since       1.0
  *
- * @param int $form_id    ID of the donation form.
- * @param int $price_id   ID of the price option.
- * @param int $payment_id payment ID for use in filters ( optional ).
+ * @param int  $form_id      ID of the donation form.
+ * @param int  $price_id     ID of the price option.
+ * @param int  $payment_id   payment ID for use in filters ( optional ).
+ * @param bool $use_fallback Outputsz the level amount if no level text is provided.
  *
  * @return string $price_name Name of the price option
  */
-function give_get_price_option_name( $form_id = 0, $price_id = 0, $payment_id = 0 ) {
+function give_get_price_option_name( $form_id = 0, $price_id = 0, $payment_id = 0, $use_fallback = true ) {
 
 	$prices     = give_get_variable_prices( $form_id );
 	$price_name = '';
@@ -561,7 +570,7 @@ function give_get_price_option_name( $form_id = 0, $price_id = 0, $payment_id = 
 		if ( intval( $price['_give_id']['level_id'] ) == intval( $price_id ) ) {
 
 			$price_text     = isset( $price['_give_text'] ) ? $price['_give_text'] : '';
-			$price_fallback = give_currency_filter( give_format_amount( $price['_give_amount'], array( 'sanitize' => false ) ), '', true );
+			$price_fallback = $use_fallback ? give_currency_filter( give_format_amount( $price['_give_amount'], array( 'sanitize' => false ) ), '', true ) : '';
 			$price_name     = ! empty( $price_text ) ? $price_text : $price_fallback;
 
 		}
@@ -595,7 +604,7 @@ function give_price_range( $form_id = 0, $formatted = true ) {
 
 	);
 
-	if( ! $formatted ) {
+	if ( ! $formatted ) {
 		$range = wp_strip_all_tags( $range );
 	}
 
@@ -936,7 +945,7 @@ function _give_get_prefill_form_field_values( $form_id ) {
 
 	if ( is_user_logged_in() ) :
 		$donor_data    = get_userdata( get_current_user_id() );
-		$donor_address = get_user_meta( get_current_user_id(), '_give_user_address', true );
+		$donor_address = give_get_donor_address( get_current_user_id() );
 
 		$logged_in_donor_info = array(
 			// First name.
@@ -949,22 +958,22 @@ function _give_get_prefill_form_field_values( $form_id ) {
 			'give_email'      => $donor_data->user_email,
 
 			// Street address 1.
-			'card_address'    => ( ! empty( $donor_address['line1'] ) ? $donor_address['line1'] : '' ),
+			'card_address'    => $donor_address['line1'],
 
 			// Street address 2.
-			'card_address_2'  => ( ! empty( $donor_address['line2'] ) ? $donor_address['line2'] : '' ),
+			'card_address_2'  => $donor_address['line2'],
 
 			// Country.
-			'billing_country' => ( ! empty( $donor_address['country'] ) ? $donor_address['country'] : '' ),
+			'billing_country' => $donor_address['country'],
 
 			// State.
-			'card_state'      => ( ! empty( $donor_address['state'] ) ? $donor_address['state'] : '' ),
+			'card_state'      => $donor_address['state'],
 
 			// City.
-			'card_city'       => ( ! empty( $donor_address['city'] ) ? $donor_address['city'] : '' ),
+			'card_city'       => $donor_address['city'],
 
 			// Zipcode
-			'card_zip'        => ( ! empty( $donor_address['zip'] ) ? $donor_address['zip'] : '' ),
+			'card_zip'        => $donor_address['zip'],
 		);
 	endif;
 

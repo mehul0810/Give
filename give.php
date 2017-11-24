@@ -440,6 +440,7 @@ if ( ! class_exists( 'Give' ) ) :
 			require_once GIVE_PLUGIN_DIR . 'includes/forms/widget.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/shortcodes.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/formatting.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/currency-functions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/price-functions.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/error-tracking.php';
 			require_once GIVE_PLUGIN_DIR . 'includes/process-donation.php';
@@ -472,6 +473,7 @@ if ( ! class_exists( 'Give' ) ) :
 			require_once GIVE_PLUGIN_DIR . 'includes/emails/actions.php';
 
 			require_once GIVE_PLUGIN_DIR . 'includes/donors/class-give-donors-query.php';
+			require_once GIVE_PLUGIN_DIR . 'includes/donors/backward-compatibility.php';
 
 			if ( defined( 'WP_CLI' ) && WP_CLI ) {
 				require_once GIVE_PLUGIN_DIR . 'includes/class-give-cli-commands.php';

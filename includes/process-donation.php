@@ -300,6 +300,17 @@ function give_donation_form_validate_fields() {
 		give_donation_form_validate_agree_to_terms();
 	}
 
+	// Stop processing donor registration, if donor registration is optional and donor can do guest checkout.
+	// If registration form username field is empty that means donor does want to registration instead wants guest checkout.
+	if (
+		! give_logged_in_only( $form_id )
+		&& isset( $_POST['give-purchase-var'] )
+		&& $_POST['give-purchase-var'] == 'needs-to-register'
+		&& empty( $_POST['give_user_login'] )
+	) {
+		unset( $_POST['give-purchase-var'] );
+	}
+
 	if ( is_user_logged_in() ) {
 		// Collect logged in user data.
 		$valid_data['logged_in_user'] = give_donation_form_validate_logged_in_user();
@@ -926,11 +937,6 @@ function give_get_donation_form_user( $valid_data = array() ) {
 	if ( empty( $user['address']['country'] ) ) {
 		$user['address'] = false;
 	} // End if().
-
-	if ( ! empty( $user['user_id'] ) && $user['user_id'] > 0 && ! empty( $user['address'] ) ) {
-		// Store the address in the user's meta so the donation form can be pre-populated with it on return donation.
-		update_user_meta( $user['user_id'], '_give_user_address', $user['address'] );
-	}
 
 	// Return valid user.
 	return $user;
