@@ -192,8 +192,7 @@ var give_setting_edit = false;
 		$give_chosen_containers.chosen({
 			inherit_select_classes: true,
 			placeholder_text_single: give_vars.one_option,
-			placeholder_text_multiple: give_vars.one_or_more_option,
-			width: '100%'
+			placeholder_text_multiple: give_vars.one_or_more_option
 		});
 
 		// This fixes the Chosen box being 0px wide when the thickbox is opened.
