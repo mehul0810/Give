@@ -130,12 +130,14 @@ function give_run_install() {
 			'v1813_update_user_roles',
 			'v1813_update_donor_user_roles',
 			'v1817_update_donation_iranian_currency_code',
+			'v1817_cleanup_user_roles',
 			'v20_upgrades_form_metadata',
 			'v20_logs_upgrades',
 			'v20_move_metadata_into_new_table',
 			'v20_rename_donor_tables',
 			'v20_upgrades_donor_name',
-			'v20_upgrades_user_address'
+			'v20_upgrades_user_address',
+			'v20_upgrades_payment_metadata'
 		);
 
 		foreach ( $upgrade_routines as $upgrade ) {

@@ -121,6 +121,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'name'    => esc_html__( 'Currency', 'give' ),
 							'desc'    => esc_html__( 'The donation currency. Note that some payment gateways have currency restrictions.', 'give' ),
 							'id'      => 'currency',
+							'class'   => 'give-select-chosen',
 							'type'    => 'select',
 							'options' => give_get_currencies(),
 							'default' => 'USD',
@@ -206,7 +207,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => give_cmb2_get_post_options( array(
 								'post_type'   => 'page',
-								'numberposts' => - 1
+								'numberposts' =>  999
 							) ),
 						),
 						array(
@@ -216,7 +217,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => give_cmb2_get_post_options( array(
 								'post_type'   => 'page',
-								'numberposts' => - 1
+								'numberposts' => 999
 							) ),
 						),
 						array(
@@ -227,7 +228,7 @@ if ( ! class_exists( 'Give_Settings_General' ) ) :
 							'type'    => 'select',
 							'options' => give_cmb2_get_post_options( array(
 								'post_type'   => 'page',
-								'numberposts' => - 1
+								'numberposts' => 999
 							) ),
 						),
 						array(
