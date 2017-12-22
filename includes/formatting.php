@@ -673,12 +673,43 @@ function give_validate_nonce( $nonce, $action = - 1, $wp_die_args = array() ) {
 
 	$wp_die_args = wp_parse_args( $wp_die_args, $default_wp_die_args );
 
-	if ( ! wp_verify_nonce( $nonce, $action ) ) {
-		wp_die(
-			$wp_die_args['message'],
-			$wp_die_args['title'],
-			$wp_die_args['args']
-		);
+	// Verify nonce.
+	$verify_nonce = wp_verify_nonce( $nonce, $action );
+
+	if ( ! $verify_nonce ) {
+		if ( ! wp_doing_ajax() ) {
+			wp_die(
+				$wp_die_args['message'],
+				$wp_die_args['title'],
+				$wp_die_args['args']
+			);
+		}
+
+		// Return nonce failed message.
+		return $wp_die_args['message'];
+	}
+}
+
+/**
+ * Verify nonce while processing donation form.
+ *
+ * @since 2.0
+ *
+ * @param string $nonce Pass nonce value.
+ */
+function give_verify_donation_form_nonce( $nonce = '' ) {
+	// Get nonce key from donation.
+	$nonce   = empty( $nonce ) ? $_POST['_wpnonce'] : $nonce;
+	$form_id = isset( $_POST['give-form-id'] ) ? absint( $_POST['give-form-id'] ) : 0;
+
+	// Form nonce action.
+	$nonce_action = "donation_form_nonce_{$form_id}";
+
+	// Nonce validation.
+	$nonce_error = give_validate_nonce( $nonce, $nonce_action );
+
+	if ( ! empty( $nonce_error ) ) {
+		give_set_error( 'donation_form_nonce', $nonce_error );
 	}
 }
 
