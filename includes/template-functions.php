@@ -342,12 +342,24 @@ add_filter( 'post_class', 'give_add_post_class', 20, 3 );
 /**
  * Get the placeholder image URL for forms etc
  *
+ * @param array $args List of arguments to manage placeholder image attributes.
+ *
+ * @since  2.1
  * @access public
+ *
  * @return string
  */
-function give_get_placeholder_img_src() {
+function give_get_placeholder_img_src( $args = array() ) {
 
-	$placeholder_url = '//placehold.it/600x600&text=' . urlencode( esc_attr__( 'Give Placeholder Image', 'give' ) );
+	$defaults = array(
+		'width'  => 600,
+		'height' => 600,
+		'text'   => __( 'Give Placeholder Image', 'give' ),
+	);
+
+	$args = wp_parse_args( $args, $defaults );
+
+	$placeholder_url = "//via.placeholder.com/{$args['width']}x{$args['height']}&text={$args['text']}";
 
 	return apply_filters( 'give_placeholder_img_src', $placeholder_url );
 }
