@@ -636,3 +636,46 @@ function give_totals_shortcode( $atts ) {
 }
 
 add_shortcode( 'give_totals', 'give_totals_shortcode' );
+
+/**
+ * The [donation_form_grid] ShortCode.
+ *
+ * @param array $atts ShortCode Attributes.
+ *
+ * @since 2.1
+ */
+function give_donation_form_grid( $atts ) {
+	$donation_form_grid = shortcode_atts( array(
+		'id'             => 'all',
+		'column'         => 3,
+		'number'         => 3,
+		'goal'           => true,
+		'excerpt'        => true,
+		'featured_image' => true,
+		'display_style'  => 'redirect' // Supported Display Styles: modal and redirect.
+	), $atts, 'donation_form_grid' );
+
+	$args = array(
+		'post_type'      => 'give_forms',
+		'post_status'    => 'publish',
+		'posts_per_page' => $donation_form_grid['number'],
+	);
+
+	// If not All, check for select Give Donation Forms.
+	if( 'all' !== $donation_form_grid['id'] ) {
+		$args['post__in'] = explode( ',', $donation_form_grid['id'] );
+	}
+
+	$give_forms = new WP_Query( $args );
+	if( $give_forms->have_posts() ) {
+		echo '<div class="give-grid-row give-donation-form-grid">';
+		while ( $give_forms->have_posts() ) : $give_forms->the_post();
+			ob_start();
+			$donation_form_grid['id'] = get_the_ID();
+			give_get_template( 'shortcode-form-grid', $donation_form_grid );
+			echo apply_filters( 'give_donation_form_grid_output', ob_get_clean() );
+		endwhile;
+		echo '</div>';
+	}
+}
+add_shortcode( 'donation_form_grid', 'give_donation_form_grid' );
