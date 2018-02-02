@@ -10,18 +10,23 @@ $breakpoint-large: 60em; // 960px
 
   .give-grid__item {
 	float: left;
+	position: relative;
+	margin: 0.5rem 1%;
+	min-height: 500px;
+	border: 2px solid #cccccc;
+	padding: 10px;
+  }
+
+  [class^="give-grid-col"] {
+	float: left;
 	margin: 0.5rem 1%;
 	min-height: 0.125rem;
   }
 
-  [class^="give-grid-col"] {
-    @extend .give-grid__item;
-  }
-
   &::after {
-    content: "";
-    display: table;
-    clear: both;
+	content: "";
+	display: table;
+	clear: both;
   }
 }
 
@@ -41,8 +46,8 @@ $breakpoint-large: 60em; // 960px
 
 @media only screen and (max-width: $breakpoint-small) {
   .give-grid-row {
-    [class^="give-grid-col"] {
-      width: $width;
-    }
+	[class^="give-grid-col"] {
+	  width: $width;
+	}
   }
 }
