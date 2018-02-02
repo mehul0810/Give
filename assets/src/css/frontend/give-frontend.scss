@@ -11,6 +11,7 @@
 @import '_mixins';
 @import 'fonts';
 @import '../plugins/hint.min';
+@import '../admin/grids';
 @import 'receipt';
 @import '../plugins/float-labels';
 @import 'float-labels';
@@ -23,4 +24,3 @@
 @import 'tables';
 @import 'theme-compatibility';
 @import 'donation-history';
-@import '../admin/grids';
