@@ -1406,7 +1406,7 @@ function __give_render_metadata_email_tag( $content, $tag_args ) {
 
 			$meta_tag  = str_replace( array( '{', 'meta_', '}' ), '', $meta_tag );
 			$type      = current( explode( '_', $meta_tag, 2 ) );
-			$meta_name = str_replace( "{$type}_", '', $meta_tag );
+			$meta_name = preg_replace( "/^{$type}_/", '', $meta_tag );
 
 			switch ( $type ) {
 				case 'donation':
@@ -1470,9 +1470,6 @@ function __give_render_metadata_email_tag( $content, $tag_args ) {
 					$replace[] = end( $search );
 			}
 		}
-
-		error_log( print_r( $search, true ) . "\n", 3, WP_CONTENT_DIR . '/debug_new.log' );
-		error_log( print_r( $replace, true ) . "\n", 3, WP_CONTENT_DIR . '/debug_new.log' );
 
 		if ( ! empty( $search ) && ! empty( $replace ) ) {
 			$content = str_replace( $search, $replace, $content );
